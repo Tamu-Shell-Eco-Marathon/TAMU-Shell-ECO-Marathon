@@ -58,7 +58,7 @@ class Vehicle:
 
         # Update Speed
         wheel_circumference_in = math.pi * self.WHEEL_DIAMETER_IN
-        self.motor_mph = self.rpm * wheel_circumference_in * 60 / 63360.0
+        #self.motor_mph = self.rpm * wheel_circumference_in * 60 / 63360.0
 
         # Calculate Tick Delta
         delta_ticks = self.motor_ticks - self._prev_motor_ticks

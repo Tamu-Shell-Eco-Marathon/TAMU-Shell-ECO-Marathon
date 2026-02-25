@@ -5,6 +5,7 @@ from performance import PerformanceMonitor
 from uart_manager import UartManager
 from vehicle_state import Vehicle
 from logger import Logger
+from LED import TargetSpeedIndicator
 
 # --- Hardware Setup ---
 oled_driver = OLEDDriver()
@@ -12,6 +13,9 @@ display = DisplayManager(oled_driver)
 button_manager = ButtonManager()
 
 # --- Debug Flags ---
+#BEGIN DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
+DEBUG_TSI = False
+#END DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
 DEBUG_PERFORMANCE = False
 DEBUG_VERBOSE = False
 perf_monitor = (
@@ -24,6 +28,7 @@ perf_monitor = (
 uart_manager = UartManager(hardware.uart)
 vehicle = Vehicle()
 logger = Logger(interval_ms=1000)
+tsi = TargetSpeedIndicator(data_pin=16, num_leds=14)
 
 # ----------------- TIME VARIABLES -----------------
 last_sample_time = time.ticks_ms()
@@ -49,8 +54,30 @@ while True:
             uart_manager.send("T,{:.1f}".format(vehicle.target_mph))
             last_target_send_time = current_time
 
+
     # --------- Derived Values (runs even with stale data)
     vehicle.update_states(sample_dt, current_time)
+    # #BEGIN DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
+    # if DEBUG_TSI:
+    #     vehicle.state = "RACE"          # force race mode ON so LEDs are allowed
+    #     vehicle.smart_cruise = False
+        
+    #     vehicle.target_mph = 18.0
+    #     vehicle.motor_mph = 12.0 + (time.ticks_ms() // 1500) % 10  # 12..21 repeating
+    # #END DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
+
+
+
+    tsi.update(vehicle)
+
+
+    # tsi.update(
+    #     current_speed=vehicle.motor_mph,
+    #     target_speed=vehicle.target_mph,
+    #     race_mode=(vehicle.state == "RACE"),
+    #     smart_cruise=vehicle.smart_cruise
+    # )
+
 
     button_manager.update(vehicle, display, uart_manager)
 

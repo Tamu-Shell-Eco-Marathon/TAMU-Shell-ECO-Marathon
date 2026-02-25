@@ -334,7 +334,7 @@ class DisplayManager:
             minus_width = 10
             minus_x = int_x - minus_width - 4
             minus_y = 25
-            self.oled.hline(minus_x, minus_y, minus_width, 1)
+            self.oled.fill_rect(minus_x, minus_y, minus_width, 1)
 
     def render_time(self, seconds):
         """
