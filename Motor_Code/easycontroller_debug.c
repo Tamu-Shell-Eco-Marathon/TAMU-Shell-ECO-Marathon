@@ -484,7 +484,7 @@ void commutate_open_loop()
     while(true)
     {
         writePWM(state % 6, 25, false);
-        printf("State = %d\n", state % 6); //*********** print the motor state being written to
+        printf("State = %d | current_ma = %d mA\n", state % 6, (adc_isense - adc_bias) * CURRENT_SCALING); // Same current scaling used in on_adc_fifo
         sleep_ms(50);
         state++;
     }
@@ -565,7 +565,8 @@ int main() {
     pwm_set_irq_enabled(A_PWM_SLICE, true); // Enables interrupts, starting motor commutation
     
     
-
+    commutate_open_loop();
+    
         while (true) {
 
             gpio_put(LED_PIN, !gpio_get(LED_PIN));  // Toggle the LED
@@ -636,3 +637,5 @@ Tune smart cruise see if it works
 integrate time and and in the interrupt
 
 */
+
+
