@@ -30,6 +30,7 @@ float rpmtomph = 0.04767; //Conversion from rpm to mph (rpm-to-mph)
 
 
 uint8_t hallToMotor[8] = {255, 3, 1, 2, 5, 4, 0, 255};  //Correct Hall Table !!!DO NOT CHANGE!!!
+
 // uint8_t hallToMotor[8] = {255, 255, 255, 255, 255, 255, 255, 255};  // Default hall table. Overwrite this with the output of the hall auto-identification 
 // uint8_t hallToMotor[8] = {255, 2, 0, 1, 4, 3, 5, 255};  // Example hall table
 
@@ -565,7 +566,7 @@ int main() {
     pwm_set_irq_enabled(A_PWM_SLICE, true); // Enables interrupts, starting motor commutation
     
     
-    commutate_open_loop();
+    //commutate_open_loop();
     
         while (true) {
 
@@ -619,7 +620,7 @@ int main() {
        throttle,
        duty_cycle_norm,
        motorState);
-        }
+       }
 
     return 0;
 }

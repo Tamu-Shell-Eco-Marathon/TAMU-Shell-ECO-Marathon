@@ -1,5 +1,6 @@
 #include "motor_state.h"
 #include "motor_user_config.h"
+#include "motor_pins.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -272,8 +273,9 @@ const Command cmd_table[] = {
     {"kp",                     CMD_FLOAT,  (void*)&kp},
     {"ki",                     CMD_FLOAT,  (void*)&ki},
     {"kd",                     CMD_FLOAT,  (void*)&kd},
+    {"launch_speed",           CMD_FLOAT,  (void*)&launch_speed_mph},
     {"BATTERY_MAX_CURRENT_MA", CMD_INT,    (void*)&BATTERY_MAX_CURRENT_MA},
-    {"LAUNCH_DUTY_CYCLE",      CMD_INT,    (void*)&LAUNCH_DUTY_CYCLE},
+    {"LAUNCH_DUTY_CYCLE",      CMD_INT,    (void*)&LAUNCH_DUTY_CYCLE}, //enter value 0-100%
     {"cruise_error",           CMD_INT,    (void*)&cruise_error},
     {"test_current_ma",        CMD_INT,    (void*)&test_current_ma},
     {"show_metrics",           CMD_TOGGLE, (void*)&show_metrics}
@@ -320,8 +322,16 @@ void process_serial_input() {
                 
                 case CMD_INT: {
                     int* val = (int*)cmd_table[i].target;
-                    *val = (int)strtof(tokens[1], NULL);
-                    printf(">>> %s updated to: %d\n", cmd_table[i].name, *val);
+                    int raw = (int)strtof(tokens[1], NULL);
+
+                    // For LAUNCH_DUTY_CYCLE, allow 0-100 to mean percent of DUTY_CYCLE_MAX.
+                    if (strcmp(cmd_table[i].name, "LAUNCH_DUTY_CYCLE") == 0 && raw >= 0 && raw <= 100) {
+                        *val = (raw * DUTY_CYCLE_MAX) / 100;
+                        printf(">>> %s updated to: %d (%d%% of max %d)\n", cmd_table[i].name, *val, raw, DUTY_CYCLE_MAX);
+                    } else {
+                        *val = raw;
+                        printf(">>> %s updated to: %d\n", cmd_table[i].name, *val);
+                    }
                     break;
                 }
                 

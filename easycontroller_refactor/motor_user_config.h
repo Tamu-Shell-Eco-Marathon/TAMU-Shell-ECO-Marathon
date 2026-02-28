@@ -18,6 +18,7 @@ extern int THROTTLE_LOW;
 extern int THROTTLE_HIGH;
 extern int ECO_CURRENT_ma;
 extern float rpmtomph;                    // Conversion from rpm to mph
+extern float launch_speed_mph;            // Launch disables once vehicle speed exceeds this MPH
 
 extern uint8_t hallToMotor[8];            // Hall-to-commutation-state table (DO NOT CHANGE TABLE VALUES)
 

@@ -57,9 +57,10 @@ void on_adc_fifo(void) {
     launch = false;
     //race_mode = true; //Temporary default mode for testing
     UCO = false; //User Configured Operation currently used for smart cruise
+    float speed_mph = rpm * rpmtomph;
 
     if (race_mode){
-        if (rpm < 30 && throttle != 0){ 
+        if (speed_mph < launch_speed_mph && throttle != 0){
             launch = true;
         }
         else if (adc_throttle > 2000){ 
@@ -73,7 +74,7 @@ void on_adc_fifo(void) {
     else if (drive_mode){
         UCO = false;
         THROTTLE_HIGH = 2300;
-        if (rpm < 30 && throttle != 0){ 
+        if (speed_mph < launch_speed_mph && throttle != 0){
             launch = true;
         }
         else {

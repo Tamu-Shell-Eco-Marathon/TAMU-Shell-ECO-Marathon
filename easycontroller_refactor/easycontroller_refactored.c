@@ -52,6 +52,7 @@ int main(void) {
             last_UART_send = get_absolute_time();
             if (show_metrics){
                 printf("Mode: %s\n", drive_mode ? "Drive" : (race_mode ? "Race" : "Test"));
+                printf("Battery Voltage: %.2f V\n", voltage_mv / 1000.0f);
                 if (race_mode){
                     printf("Speed: %f mph\n", rpm * rpmtomph);
                     printf("Target Speed: %f mph\n", target_speed);
@@ -68,6 +69,7 @@ int main(void) {
                 if (test_mode){
                     printf("Test Current: %d mA\n", test_current_ma);
                     printf("Current Target: %d mA\n", current_target_ma);
+                    printf("Battery Current: %d mA\n", battery_current_ma);
                     printf("Speed: %f mph\n", rpm * rpmtomph);
                     printf("UCO: %s\n", UCO ? "ON" : "OFF");
                     printf("\n");
