@@ -8,7 +8,7 @@ class Vehicle:
     def __init__(self):
 
         # State of the vehicle
-        self.state = "DRIVE"
+        self.state = "DRIVE" # DRIVE, TEST, RACE
         self.logging_armed = False # Toggle via Menu
 
         # Measured signals from the motor controller
