@@ -30,6 +30,7 @@ float rpmtomph = 0.04767; //Conversion from rpm to mph (rpm-to-mph)
 
 
 uint8_t hallToMotor[8] = {255, 3, 1, 2, 5, 4, 0, 255};  //Correct Hall Table !!!DO NOT CHANGE!!!
+
 // uint8_t hallToMotor[8] = {255, 255, 255, 255, 255, 255, 255, 255};  // Default hall table. Overwrite this with the output of the hall auto-identification 
 // uint8_t hallToMotor[8] = {255, 2, 0, 1, 4, 3, 5, 255};  // Example hall table
 
@@ -484,7 +485,7 @@ void commutate_open_loop()
     while(true)
     {
         writePWM(state % 6, 25, false);
-        printf("State = %d\n", state % 6); //*********** print the motor state being written to
+        printf("State = %d | current_ma = %d mA\n", state % 6, (adc_isense - adc_bias) * CURRENT_SCALING); // Same current scaling used in on_adc_fifo
         sleep_ms(50);
         state++;
     }
@@ -513,32 +514,6 @@ void check_serial_input() {
     }
 }
 
-void commutate_open_loop_Computer_Control()
-{
-    // A useful function to debug electrical problems with the board.
-    // This slowly advances the motor commutation without reading hall sensors. The motor should slowly spin
-    int state = 0;
-    while(true)
-    {
-        check_serial_input();
-        writePWM(state % 6, throttle, false);
-        //printf("State = %d\n", state % 6); //*********** print the motor state being written to
-        sleep_ms(100);
-        state++;
-    }
-}
-
-
-//********** wait function !!!do not use after interrupts are enabled!!!
-void wait_for_serial_command(const char *message) {
-    printf("%s\n", message);
-    printf("Type any key + Enter to continue...\n");
-
-    int c = getchar();  // Blocks until at least one character arrives
-    (void)c;            // discard it, we only care about pausing
-}
-
-
 void check_serial_input_for_Phase_Current() {
     static char buf[8];
     static int idx = 0;
@@ -563,11 +538,6 @@ void check_serial_input_for_Phase_Current() {
 
 
 int main() {
-    printf("Hello from Pico!\n");
-    // if (COMPUTER_CONTROL) {
-    //     F_PWM = 1000;   // slow for visible LEDs  !!!!!!!!!!!!!!!!!!!!!!!IF TESTING WITH MOTOR CHANGE THIS BACK TO 16000!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // }
-
 
     init_hardware();
 
@@ -577,42 +547,18 @@ int main() {
     char message[64];
 
 
-    printf("Hello from Pico!\n");
 
-                        //MODE SELECT//
-    //wait_for_serial_command("System initialized. Waiting to start..."); //***Wait function press any key to pass
-    int mode;
     int signal = 's';
     int duty_cycle_norm = 0;
     int throttle_norm = 0;
     int eco;
     int speed;
-
-    //Smart cruise
     float target_speed = 16.0; //target cruise speed
     float cruise_error = 1.0; //looking for target speed += 1 mph
     float cruise_increment = 250; //will increase or decrease target current by 250mA if off target 
 
-    //Smart cruise
-
-    printf("Select mode of operation");
-    printf("Current control: 0     Open loop commutate: 1     Open loop comutate serial command pwm: 2");
-    //mode=getchar();
-    mode = '0';
-    if (mode == '1'){
-        commutate_open_loop();   // May be helpful for debugging electrical problems
-    }
-    
-
-    if (mode == '2'){
-        commutate_open_loop_Computer_Control();
-    }
-    
-
-
     if(IDENTIFY_HALLS_ON_BOOT){
         identify_halls();
-        wait_for_serial_command("Hall identification done. Review table above."); //***Wait function press any key to pass
     }
 
     sleep_ms(1000);
@@ -620,13 +566,10 @@ int main() {
     pwm_set_irq_enabled(A_PWM_SLICE, true); // Enables interrupts, starting motor commutation
     
     
-
-    if (mode == '0'){
+    //commutate_open_loop();
+    
         while (true) {
-            //printf("%6.2d, %6.2f, %6d, %6.2d, %6d, %3d, %2d\n", current_ma_smoothed, current_TargetA, duty_cycle, voltage_mv, duty_cycle, throttle, rpm);
-            // if(current_target_ma == ECO_CURRENT_ma){
-            //     printf("----------------------------ECO MODE ACTIVATED(----------------------------");
-            // }
+
             gpio_put(LED_PIN, !gpio_get(LED_PIN));  // Toggle the LED
             check_serial_input_for_Phase_Current(); //Changes Phase current max based on serial inputs
 
@@ -641,8 +584,6 @@ int main() {
             { 
                 eco = 0;
             }
-
-            // Inside main while(true) loop
             snprintf(message, sizeof(message), "%c%03d%06d%03d%03d%03d%1d\n", 
                 signal, 
                 UARTvoltage_mv, 
@@ -654,14 +595,6 @@ int main() {
             //printf(message);
             uart_puts(UART_ID, message);
             sleep_ms(250);
-
-            //Smart cruise
-            // if (throttle_norm > 90){
-            //     smart_cruise = true;
-            // }
-            // else {
-            //     smart_cruise = false;
-            // }
     
 
             if (smart_cruise == true){ //checking if current speed within error of target and if we've waited long enough to detect a change
@@ -687,8 +620,7 @@ int main() {
        throttle,
        duty_cycle_norm,
        motorState);
-        }
-    }
+       }
 
     return 0;
 }
@@ -706,3 +638,5 @@ Tune smart cruise see if it works
 integrate time and and in the interrupt
 
 */
+
+

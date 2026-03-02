@@ -1,0 +1,218 @@
+# ninja log v7
+129	227	7939327835700778	picotool/src/picotoolBuild-stamp/picotoolBuild-mkdir	a407b50e28d5fc21
+129	227	7939327835700778	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/picotool/src/picotoolBuild-stamp/picotoolBuild-mkdir	a407b50e28d5fc21
+227	322	7939327836704368	picotool/src/picotoolBuild-stamp/picotoolBuild-download	17bf8a91974bc631
+227	322	7939327836704368	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/picotool/src/picotoolBuild-stamp/picotoolBuild-download	17bf8a91974bc631
+67	359	7939327834195548	pico-sdk/src/rp2040/boot_stage2/CMakeFiles/bs2_default.dir/compile_time_choice.S.obj	770752f6c2dd17e6
+323	433	7939327837790692	picotool/src/picotoolBuild-stamp/picotoolBuild-update	d6bee88e57056965
+323	433	7939327837790692	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/picotool/src/picotoolBuild-stamp/picotoolBuild-update	d6bee88e57056965
+434	537	7939327838790054	picotool/src/picotoolBuild-stamp/picotoolBuild-patch	8cb09bb764c48889
+434	537	7939327838790054	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/picotool/src/picotoolBuild-stamp/picotoolBuild-patch	8cb09bb764c48889
+361	776	7939327841183149	pico-sdk/src/rp2040/boot_stage2/bs2_default.elf	a15ea1ecb11c8b6b
+361	776	7939327841183149	pico-sdk/src/rp2040/boot_stage2/bs2_default.dis	a15ea1ecb11c8b6b
+361	776	7939327841183149	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/pico-sdk/src/rp2040/boot_stage2/bs2_default.dis	a15ea1ecb11c8b6b
+777	947	7939327842955661	pico-sdk/src/rp2040/boot_stage2/bs2_default.bin	6878c0a10bc8c8ee
+777	947	7939327842955661	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/pico-sdk/src/rp2040/boot_stage2/bs2_default.bin	6878c0a10bc8c8ee
+947	1119	7939327844570631	pico-sdk/src/rp2040/boot_stage2/bs2_default_padded_checksummed.S	c0199ce441186163
+947	1119	7939327844570631	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/pico-sdk/src/rp2040/boot_stage2/bs2_default_padded_checksummed.S	c0199ce441186163
+1119	1238	7939327844751135	pico-sdk/src/rp2040/boot_stage2/CMakeFiles/bs2_default_library.dir/bs2_default_padded_checksummed.S.obj	3a7bd927e66d1525
+537	8181	7939327915280693	picotool/src/picotoolBuild-stamp/picotoolBuild-configure	e1ce771852b14f2b
+537	8181	7939327915280693	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/picotool/src/picotoolBuild-stamp/picotoolBuild-configure	e1ce771852b14f2b
+70488	71157	7939328545019531	picotool/src/picotoolBuild-stamp/picotoolBuild-test	2b71cda0568c3f51
+70488	71157	7939328545019531	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/picotool/src/picotoolBuild-stamp/picotoolBuild-test	2b71cda0568c3f51
+71157	71311	7939328546525038	picotool/src/picotoolBuild-stamp/picotoolBuild-done	17852b99cf08bcc7
+71157	71311	7939328546525038	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/picotool/src/picotoolBuild-stamp/picotoolBuild-done	17852b99cf08bcc7
+189	1366	7939329611208719	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/hardware_claim/claim.c.obj	c2a1692a3d62ddb
+123	975	7939329610540193	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2040/pico_platform/platform.c.obj	64a04af4326b999f
+307	1281	7939329612394305	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/lock_core.c.obj	4cffccac5844fd5a
+251	988	7939329611828142	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_sync_spin_lock/sync_spin_lock.c.obj	5de123e12fec6330
+169	874	7939329611008710	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_platform_common/common.c.obj	c3156ebbc32bdb28
+275	1246	7939329612070994	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_irq/irq_handler_chain.S.obj	5311e9c8ee3bd75e
+240	1229	7939329611723476	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj	6e63fff05e925c1a
+341	1321	7939329612720558	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/critical_section.c.obj	3db8a8b4d304286a
+179	1294	7939329611106928	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_platform_panic/panic.c.obj	fed24405c04ff6f5
+112	1265	7939329610433378	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj	3ed0ae759c450045
+362	1404	7939329612945167	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_time/timeout_helper.c.obj	338c680e216e630b
+288	1352	7939329612191937	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/sem.c.obj	ff867c49ceb05af6
+102	963	7939329610331966	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj	4de5e6792896527d
+330	1470	7939329612619824	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/mutex.c.obj	d24ddecd74eb5ffe
+264	1337	7939329611958739	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj	3e9296ddeba411ca
+424	1519	7939329613565494	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj	5c8a8ac72c40f111
+372	1387	7939329613041158	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj	6f7d37c357f4bec1
+385	1420	7939329613162477	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_util/datetime.c.obj	b308465c2f983c1e
+92	1307	7939329610186757	CMakeFiles/easycontroller.dir/easycontroller.c.obj	432907fd5e6628f2
+1321	1692	7939329622536192	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_divider/divider.S.obj	71909c32a9450818
+400	1484	7939329613316958	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_util/pheap.c.obj	d8845f37da2445c3
+352	1643	7939329612828655	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_time/time.c.obj	e127417dd3a0d672
+413	1434	7939329613437961	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/common/pico_util/queue.c.obj	5074a01add37c235
+1281	1731	7939329622125349	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_boot_lock/boot_lock.c.obj	bc09aaedbd71da82
+975	1546	7939329619069774	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_vreg/vreg.c.obj	fd42e3e779d628a9
+1307	1875	7939329622385302	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_xosc/xosc.c.obj	e96930c566416258
+1295	1846	7939329622264663	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_flash/flash.c.obj	fb186b519576191d
+1246	1861	7939329621767319	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj	73fc5f2f7c7add85
+1266	1746	7939329621967663	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_bootrom/bootrom_lock.c.obj	47f43ec1fd611be1
+989	1604	7939329619204789	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_watchdog/watchdog.c.obj	608c97db07e1540f
+1337	1832	7939329622677106	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj	fe5f9d6d4ee45de3
+963	1582	7939329618945518	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_pll/pll.c.obj	ad790123e923f12e
+1229	1717	7939329621607496	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_ticks/ticks.c.obj	6df83660ee9035da
+1352	1980	7939329622835918	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime_init/runtime_init.c.obj	ebbd41f4a49b7139
+876	1627	7939329618067205	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj	ae814f82c962fe09
+1387	1918	7939329623174303	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime_init/runtime_init_stack_guard.c.obj	aedbb5f9fff14c7b
+1366	1966	7939329622968999	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime_init/runtime_init_clocks.c.obj	6509d39002ab1820
+1435	1947	7939329623659514	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_aeabi_rp2040.S.obj	df8f3206fd5fa0d0
+1420	1798	7939329623503835	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_divider/divider_hardware.S.obj	6851df2f95738916
+1405	1815	7939329623359897	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S.obj	f0ec224c08477a39
+1546	1891	7939329624776679	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S.obj	7faecde23b55a6e8
+1643	2055	7939329625734588	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_v1_rom_shim_rp2040.S.obj	311de00ac1f15e32
+1583	2027	7939329625136684	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_aeabi_rp2040.S.obj	bf832bcce9f7f42
+1519	1931	7939329624502254	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim_rp2040.S.obj	b636f33bfff2b594
+1718	2073	7939329626489696	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj	e03202018c70a8d4
+1470	2042	7939329624003973	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_init_rom_rp2040.c.obj	b837045933f5ae90
+1799	2564	7939329627313040	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_standard_binary_info/standard_binary_info.c.obj	37aeb9c76d25fdf5
+1604	2216	7939329625346297	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_init_rom_rp2040.c.obj	5fb78575138ca102
+1693	2413	7939329626243641	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_malloc/malloc.c.obj	bd38882308579067
+1832	2229	7939329627624241	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_crt0/crt0.S.obj	521531dfffa6115d
+1484	2537	7939329624163517	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_math.c.obj	6b5b18bef54f5711
+1966	2733	7939329628968902	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_xip_cache/xip_cache.c.obj	b5d2ab747d40ebdc
+1746	2550	7939329626772243	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_cxx_options/new_delete.cpp.obj	697ac3c92ec4af5a
+1861	2686	7939329627930062	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj	6cd49f82b8700567
+1918	2835	7939329628500449	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio_usb/stdio_usb_descriptors.c.obj	2e0f856bb45f2de2
+1931	2699	7939329628640320	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_unique_id/unique_id.c.obj	e3c07c1fdd2bce82
+1731	2624	7939329626631514	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_atomic/atomic.c.obj	162fb9ad5991e40f
+1628	2519	7939329625594623	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_math.c.obj	d69ab4ac69ed8b35
+1875	2785	7939329628061656	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio_usb/reset_interface.c.obj	139d135ddcab5aa9
+1816	2712	7939329627469421	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_printf/printf.c.obj	cd7c0397893284ba
+2073	2757	7939329630044974	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/audio/audio_device.c.obj	d1d03fcf40d0ff86
+1947	2675	7939329628802377	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_flash/flash.c.obj	fcfd851f589c60e8
+1846	2745	7939329627782689	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_clib_interface/newlib_interface.c.obj	4b3f643183895a24
+2229	2806	7939329631597682	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/dfu/dfu_device.c.obj	b866d15e8e67e831
+2520	3040	7939329634507865	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/hid/hid_device.c.obj	42179b2470a29e3f
+2056	2950	7939329629868266	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/device/usbd_control.c.obj	11e2e4810d9e8687
+2027	2911	7939329629576232	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c.obj	40d9ca4b19b15bc
+2413	2996	7939329633439967	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/dfu/dfu_rt_device.c.obj	1c4f07223ef75ed0
+1892	2898	7939329628222577	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio_usb/stdio_usb.c.obj	a57b2b27d6a1f5e
+1981	3008	7939329629118261	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c.obj	6983e7072b611e2e
+2538	3027	7939329634678748	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/midi/midi_device.c.obj	f9cb91cca32bb685
+2564	3064	7939329634945480	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/net/ecm_rndis_device.c.obj	62916ed3bbffbd6d
+2624	3113	7939329635554762	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/net/ncm_device.c.obj	ee1f9dc5fac8219a
+2675	3246	7939329636070291	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/usbtmc/usbtmc_device.c.obj	9adea27882756336
+2551	3052	7939329634822748	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/msc/msc_device.c.obj	4aeee9920c2c8393
+2042	3099	7939329629739281	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/device/usbd.c.obj	ce0896cec3c75b33
+2217	3262	7939329631472628	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/cdc/cdc_device.c.obj	840efb5ac017098d
+2699	3143	7939329636298788	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/video/video_device.c.obj	1263d538cdc9bf93
+2911	3425	7939329638417151	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_platform_common/common.c.obj	d893929fe6e1d46a
+2899	3373	7939329638297992	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2040/pico_platform/platform.c.obj	9885128bfe179c2f
+2757	3433	7939329636877152	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_adc/adc.c.obj	203873c810c5ac1
+3052	3420	7939329639827955	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_irq/irq_handler_chain.S.obj	1ddf0b0566d3c66a
+2686	3422	7939329636169846	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/vendor/vendor_device.c.obj	db883d48efebfa71
+2996	3449	7939329639271138	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/hardware_claim/claim.c.obj	897cb4d37b6f5988
+2745	3430	7939329636754839	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c.obj	f747d6829217a3f6
+3009	3437	7939329639407326	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj	ceffc35c515063eb
+2811	3406	7939329637440962	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdlib/stdlib.c.obj	424c4c7fdf4db060
+2950	3490	7939329638821096	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_platform_panic/panic.c.obj	97fea8422accc608
+3028	3491	7939329639591172	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_sync_spin_lock/sync_spin_lock.c.obj	85186becd520fcfd
+2835	3451	7939329637655411	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj	4d82746c386e63f8
+2712	3515	7939329636436779	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/tusb.c.obj	6b185b987e391573
+2733	3528	7939329636641879	CMakeFiles/easycontroller.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/common/tusb_fifo.c.obj	cf0d4a491d6dbac7
+3099	3526	7939329640300137	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/lock_core.c.obj	62e290d33933b5a6
+3064	3512	7939329639962678	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/sem.c.obj	5d4ee7ef814888ae
+3144	3532	7939329640737573	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/critical_section.c.obj	8ae2a943ef5a58f
+3262	3590	7939329641945798	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_time/timeout_helper.c.obj	a10b505e5fa3d6ab
+3113	3617	7939329640450381	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_sync/mutex.c.obj	441ecedef816561a
+3040	3577	7939329639717385	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj	363e03a7a5431b8c
+3373	3771	7939329643037926	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj	271296a499ff72da
+204	867	7939330130495234	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_pll/pll.c.obj	d2dcb0cd5f9b5134
+131	916	7939330129754970	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_util/pheap.c.obj	5641d9e04ede9f65
+121	1375	7939330129644320	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_util/datetime.c.obj	d85f0d9065185375
+161	986	7939330130061656	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj	7678ae33ffd02a22
+148	970	7939330129919436	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_util/queue.c.obj	da05cfdfd1307e3b
+193	1129	7939330130377685	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj	cbecc2ca19906d04
+3246	3858	7939329641780110	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/common/pico_time/time.c.obj	a2b3db617c9c112a
+223	902	7939330130659449	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_vreg/vreg.c.obj	dc52c4dc0bfc9ace
+264	1016	7939330131087107	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_ticks/ticks.c.obj	b52e7485bf3c7a30
+234	1441	7939330130781254	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_watchdog/watchdog.c.obj	9d47c7c12e32c16b
+349	952	7939330131937296	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_divider/divider.S.obj	8970635cf897dd7
+869	1251	7939330137141122	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_aeabi_rp2040.S.obj	49c1ee272e6fdd3e
+429	928	7939330132739122	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S.obj	785c7f9cca9a6eb9
+486	1069	7939330133311204	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_divider/divider_hardware.S.obj	dedbbcd27bb64500
+303	1114	7939330131479469	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_boot_lock/boot_lock.c.obj	183cc24f2e4e407c
+916	1209	7939330137602126	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim_rp2040.S.obj	64f0c5024ec2da7b
+374	1146	7939330132183890	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime_init/runtime_init.c.obj	3d169d770557db87
+361	1032	7939330132056002	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj	3164458ce48d24f4
+332	1056	7939330131762758	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_xosc/xosc.c.obj	84aecb25588fbc2c
+275	1402	7939330131188041	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj	da74a17a19a05914
+290	888	7939330131339354	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_bootrom/bootrom_lock.c.obj	c806cc469771f3d3
+929	1192	7939330137721579	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S.obj	1f39e1331191c9e
+952	1334	7939330137965584	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_aeabi_rp2040.S.obj	8b82fd104490c24
+314	1001	7939330131585207	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_flash/flash.c.obj	b8aec80d40658de2
+394	1169	7939330132374185	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime_init/runtime_init_clocks.c.obj	f8cbe28b4d49db05
+411	1096	7939330132558290	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_runtime_init/runtime_init_stack_guard.c.obj	8f66eef49b27b50c
+888	1389	7939330137317129	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_init_rom_rp2040.c.obj	f6e5db784ffe2622
+902	1838	7939330137463220	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_double/double_math.c.obj	506941907813678d
+94	534	7939336884299215	CMakeFiles/easycontroller_debug.dir/easycontroller_debug.c.obj	b7c2f82a9f7d4df6
+1032	1420	7939330138755503	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj	426a66f1d14a701f
+1002	1457	7939330138460939	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_v1_rom_shim_rp2040.S.obj	b286c7e6a73aad30
+970	1495	7939330138144508	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_init_rom_rp2040.c.obj	8d10aa3845de6e53
+1129	1581	7939330139723616	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_crt0/crt0.S.obj	522caa7efa7279e9
+1097	1620	7939330139399934	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_standard_binary_info/standard_binary_info.c.obj	9ee5481efa547792
+1017	1635	7939330138614518	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_malloc/malloc.c.obj	36674854cbae83d7
+1070	1696	7939330139140088	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_cxx_options/new_delete.cpp.obj	d9a8ba18d65a2fc7
+987	1822	7939330138310523	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_float/float_math.c.obj	41e55de445570af6
+1375	1923	7939330142192601	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_xip_cache/xip_cache.c.obj	867ffa636e8f0f42
+1056	1936	7939330138999040	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_atomic/atomic.c.obj	9f4d61d099312948
+1169	1949	7939330140138658	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj	c326679e811f0fb
+1457	1962	7939330143013819	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/audio/audio_device.c.obj	c21c82c6ddf1dd4f
+1114	1998	7939330139576242	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_printf/printf.c.obj	4006d0270ffa2803
+1252	2024	7939330140966486	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio_usb/stdio_usb_descriptors.c.obj	ec592ace28069246
+1146	2081	7939330139902426	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_clib_interface/newlib_interface.c.obj	f7d324e5683e3b6f
+1321	2093	7939330141666093	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_unique_id/unique_id.c.obj	99472d4c8f8c2ac2
+1209	2105	7939330140536768	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio_usb/stdio_usb.c.obj	207b0f9573dfade6
+1581	2125	7939330144257235	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/dfu/dfu_device.c.obj	fbd6ac52d4b7340f
+1193	2152	7939330140371180	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_stdio_usb/reset_interface.c.obj	ed92d1621a5c5ace
+1635	2165	7939330144796069	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/hid/hid_device.c.obj	73d549091684ccbc
+1696	2177	7939330145407576	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/midi/midi_device.c.obj	1caa835645bfbb22
+1334	2188	7939330141786904	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_flash/flash.c.obj	a380983162418fbe
+1620	2207	7939330144638515	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/dfu/dfu_rt_device.c.obj	c0a211d41e0872d8
+1822	2211	7939330146671872	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/msc/msc_device.c.obj	98e78720a37bc1b1
+1441	2227	7939330142843115	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/device/usbd_control.c.obj	867c5f988a7119b0
+1402	2229	7939330142473465	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/portable/raspberrypi/rp2040/rp2040_usb.c.obj	fbba5590e33c23b0
+1838	2232	7939330146834047	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/net/ecm_rndis_device.c.obj	e1d794d0508abfa4
+1924	2288	7939330147684961	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/net/ncm_device.c.obj	b67d1404dde41a9b
+1962	2315	7939330148063015	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/video/video_device.c.obj	c612cd91a8ecb294
+1937	2332	7939330147811755	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/usbtmc/usbtmc_device.c.obj	2f6f5ee8a8b6ecb6
+1495	2334	7939330143394599	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/cdc/cdc_device.c.obj	2c88d4c3fef615a2
+1390	2335	7939330142332166	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/portable/raspberrypi/rp2040/dcd_rp2040.c.obj	35124d33f61a6874
+2093	2446	7939330149363452	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/hardware_adc/adc.c.obj	cbf5b4349305b25
+2081	2459	7939330149261254	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/src/rp2_common/pico_fix/rp2040_usb_device_enumeration/rp2040_usb_device_enumeration.c.obj	7435fffb463e9cde
+1949	2483	7939330147937741	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/class/vendor/vendor_device.c.obj	a24d24e0d9e14d14
+1421	2521	7939330142657759	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/device/usbd.c.obj	a59361bd894fd8ed
+1998	2567	7939330148430921	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/tusb.c.obj	50dc7b7019b9b3ff
+2025	2650	7939330148687132	CMakeFiles/easycontroller_debug.dir/C_/Users/Owner/pico-sdk/lib/tinyusb/src/common/tusb_fifo.c.obj	16a4ca61b5b708ed
+2105	2942	7939330157755687	easycontroller.elf	51c70c2f25fd59bf
+2105	2942	7939330157755687	easycontroller.dis	51c70c2f25fd59bf
+2105	2942	7939330157755687	easycontroller.hex	51c70c2f25fd59bf
+2105	2942	7939330157755687	easycontroller.bin	51c70c2f25fd59bf
+2105	2942	7939330157755687	easycontroller.uf2	51c70c2f25fd59bf
+2105	2942	7939330157755687	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller.dis	51c70c2f25fd59bf
+2105	2942	7939330157755687	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller.hex	51c70c2f25fd59bf
+2105	2942	7939330157755687	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller.bin	51c70c2f25fd59bf
+2105	2942	7939330157755687	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller.uf2	51c70c2f25fd59bf
+535	1268	7939336895965917	easycontroller_debug.elf	d6d78d0a6de6cbf8
+535	1268	7939336895965917	easycontroller_debug.dis	d6d78d0a6de6cbf8
+535	1268	7939336895965917	easycontroller_debug.hex	d6d78d0a6de6cbf8
+535	1268	7939336895965917	easycontroller_debug.bin	d6d78d0a6de6cbf8
+535	1268	7939336895965917	easycontroller_debug.uf2	d6d78d0a6de6cbf8
+535	1268	7939336895965917	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.dis	d6d78d0a6de6cbf8
+535	1268	7939336895965917	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.hex	d6d78d0a6de6cbf8
+535	1268	7939336895965917	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.bin	d6d78d0a6de6cbf8
+535	1268	7939336895965917	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.uf2	d6d78d0a6de6cbf8
+86	536	7939970585338044	CMakeFiles/easycontroller_debug.dir/easycontroller_debug.c.obj	b7c2f82a9f7d4df6
+537	1336	7939970597734661	easycontroller_debug.elf	d6d78d0a6de6cbf8
+537	1336	7939970597734661	easycontroller_debug.dis	d6d78d0a6de6cbf8
+537	1336	7939970597734661	easycontroller_debug.hex	d6d78d0a6de6cbf8
+537	1336	7939970597734661	easycontroller_debug.bin	d6d78d0a6de6cbf8
+537	1336	7939970597734661	easycontroller_debug.uf2	d6d78d0a6de6cbf8
+537	1336	7939970597734661	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.dis	d6d78d0a6de6cbf8
+537	1336	7939970597734661	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.hex	d6d78d0a6de6cbf8
+537	1336	7939970597734661	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.bin	d6d78d0a6de6cbf8
+537	1336	7939970597734661	C:/Users/Owner/School/Senior Year/Semester 1/Senior Design/Motor_Control_Code/Motor_Code/build/easycontroller_debug.uf2	d6d78d0a6de6cbf8

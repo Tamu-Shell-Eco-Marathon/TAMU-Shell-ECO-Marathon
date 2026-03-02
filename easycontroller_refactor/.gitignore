@@ -1,0 +1,26 @@
+# Build directories
+build/
+cmake-build-*/
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CMakeScripts/
+
+# Ninja
+.ninja_deps
+.ninja_log
+
+# Pico SDK deps
+_deps/
+
+# UF2 files
+*.uf2
+
+# Object files
+*.o
+*.elf
+*.bin
+*.map

@@ -19,7 +19,7 @@ class Writer:
         self.clip = True
         self.row_clip = False
         self.col_clip = False
-        self.wrap = True
+        self.wrap = False
         self.col = 0
         self.row = 0
         self.cpos = 0
@@ -32,9 +32,6 @@ class Writer:
         self.clip = clip
         self.row_clip = row_clip
         self.col_clip = col_clip
-
-    def set_wrap(self, wrap):
-        self.wrap = wrap
 
     def set_textpos(self, col, row):
         self.col = col
