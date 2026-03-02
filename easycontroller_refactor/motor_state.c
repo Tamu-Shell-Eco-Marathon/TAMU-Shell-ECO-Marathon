@@ -193,65 +193,6 @@ bool read_serial_input() {
 
 bool show_metrics = false; // Set to true to enable printing of metrics in process_serial_input (for debugging)
 
-// Working version 
-
-// void process_serial_input() {
-//     // This ONLY runs if process_serial_input returns true (End of Line detected)
-//     if (read_serial_input()) { 
-        
-//         printf(">>> Processing Command: [%s]\n", tokens[0]);
-
-//         if (strcmp(tokens[0], "BOOT") == 0) {
-//             printf(">>> Jumping to Bootloader...\n");
-//             enter_bootloader();
-//         } 
-//         else if (strcmp(tokens[0], "kp") == 0) {
-//             kp = strtof(tokens[1], NULL);
-//             printf(">>> kp updated to: %.4f\n", kp);
-//         } 
-//         else if (strcmp(tokens[0], "ki") == 0) {
-//             ki = strtof(tokens[1], NULL); 
-//             printf(">>> ki updated to: %.4f\n", ki);
-//         } 
-//         else if (strcmp(tokens[0], "kd") == 0) {
-//             kd = strtof(tokens[1], NULL);
-//             printf(">>> kd updated to: %.4f\n", kd);
-//         } 
-//         else if (strcmp(tokens[0], "BATTERY_MAX_CURRENT_MA") == 0) {
-//             BATTERY_MAX_CURRENT_MA = (int)strtof(tokens[1], NULL);
-//             printf(">>> Battery Max Current updated: %d\n", BATTERY_MAX_CURRENT_MA);
-//         }
-//          else if (strcmp(tokens[0], "LAUNCH_DUTY_CYCLE") == 0) {
-//             LAUNCH_DUTY_CYCLE = (int)strtof(tokens[1], NULL);
-//             printf(">>> Launch Duty Cycle updated: %d\n", LAUNCH_DUTY_CYCLE);
-//         }
-//         else if (strcmp(tokens[0], "cruise_error") == 0) {
-//             cruise_error = (int)strtof(tokens[1], NULL);
-//             printf(">>> Cruise Error updated: %d\n", cruise_error);
-//         }
-//         else if (strcmp(tokens[0], "test_current_ma") == 0) {
-//             test_current_ma = (int)strtof(tokens[1], NULL);
-//             printf(">>> Test Current updated: %d mA\n", test_current_ma);
-//         }
-//         else if (strcmp(tokens[0], "show_metrics") == 0) {
-//             show_metrics = !show_metrics;
-//             printf(">>> Show Metrics: %s\n", show_metrics ? "ON" : "OFF");
-//         }
-//         else if (strcmp(tokens[0], "help") == 0){
-//             printf(">>> Commands: BOOT, kp, ki, kd, BATTERY_MAX_CURRENT_MA, LAUNCH_DUTY_CYCLE, cruise_error, test_current_ma, show_metrics\n");
-//         }
-//         else {
-//             printf(">>> Unknown command: %s\n", tokens[0]);
-//             printf(">>> Type help for list of commands and be sure to seperate variable values with commas.\n");
-//         }
-//     }
-//     // Do NOT put printf here, or it will flood your console 1000x per second
-// }
-
-
-
-// Prototype version of process_serial_input with show_metrics toggle and help command
-
 typedef enum {
     CMD_FUNC, 
     CMD_FLOAT,
