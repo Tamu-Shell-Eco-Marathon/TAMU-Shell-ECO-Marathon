@@ -46,7 +46,7 @@ absolute_time_t time_since_last_movement = 0;
 uint32_t motor_ticks = 0;
 bool UCO = false;
 bool at_target_speed = false;
-bool launch = false;
+volatile bool launch = false;
 bool race_mode = true;
 bool test_mode = false;
 bool drive_mode = false;
@@ -214,7 +214,6 @@ const Command cmd_table[] = {
     {"kp",                     CMD_FLOAT,  (void*)&kp},
     {"ki",                     CMD_FLOAT,  (void*)&ki},
     {"kd",                     CMD_FLOAT,  (void*)&kd},
-    {"launch_speed",           CMD_FLOAT,  (void*)&launch_speed_mph},
     {"BATTERY_MAX_CURRENT_MA", CMD_INT,    (void*)&BATTERY_MAX_CURRENT_MA},
     {"LAUNCH_DUTY_CYCLE",      CMD_INT,    (void*)&LAUNCH_DUTY_CYCLE}, //enter value 0-100%
     {"cruise_error",           CMD_INT,    (void*)&cruise_error},

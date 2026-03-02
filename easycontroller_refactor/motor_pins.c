@@ -22,7 +22,7 @@ const uint F_PWM = 16000;   // Desired PWM frequency
 const uint FLAG_PIN = 2;
 const uint HALL_OVERSAMPLE = 8;
 
-const int DUTY_CYCLE_MAX = 9830;
+const int DUTY_CYCLE_MAX = 65535;
 const int CURRENT_SCALING = 3.3 / 0.0005 / 20 / 4096 * 1000;
 const int VOLTAGE_SCALING = 3.3 / 4096 * (47 + 2.2) / 2.2 * 1000;
 const int ADC_BIAS_OVERSAMPLE = 1000;
