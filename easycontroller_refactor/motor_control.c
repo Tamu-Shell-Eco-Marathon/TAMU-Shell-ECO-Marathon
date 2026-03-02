@@ -50,17 +50,15 @@ void on_adc_fifo(void) {
     current_ma_smoothed = (current_ma + (199 * current_ma_smoothed)) / 200;
     battery_current_ma = (int)(((long long)current_ma_smoothed * duty_cycle * 6) / (DUTY_CYCLE_MAX * 10));
 
-    voltage_mv = adc_vsense * VOLTAGE_SCALING;  // Calculate the bus voltage
+    voltage_mv = (int)(adc_vsense * VOLTAGE_SCALING * 0.97722f);  // Calibrate bus voltage to match multimeter measurement
 
 
     //-------------------------------Motor drive operation logic tree-----------------------------------------------
     launch = false;
     //race_mode = true; //Temporary default mode for testing
     UCO = false; //User Configured Operation currently used for smart cruise
-    float speed_mph = rpm * rpmtomph;
-
     if (race_mode){
-        if (speed_mph < launch_speed_mph && throttle != 0){
+        if (rpm < 30 && throttle != 0){
             launch = true;
         }
         else if (adc_throttle > 2000){ 
@@ -74,7 +72,7 @@ void on_adc_fifo(void) {
     else if (drive_mode){
         UCO = false;
         THROTTLE_HIGH = 2300;
-        if (speed_mph < launch_speed_mph && throttle != 0){
+        if (rpm < 30 && throttle != 0){
             launch = true;
         }
         else {
