@@ -294,7 +294,7 @@ class DisplayManager:
 
             # 3. Render Status Bar
             if self.current_screen < 6:
-                self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, label)
+                self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, vehicle.log_file_number, label)
                 self.oled.text(vehicle.state[:1], 0, 0, 1) ## DEBUG - show vehicle state in upper right corner
 
         # 5. Present
@@ -391,7 +391,7 @@ class DisplayManager:
         self.w_digits_large.set_textpos(91, y)
         self.w_digits_large.printstring(str(n3))
 
-    def render_status_bar(self, uart_blink, timer_state, logging_armed, label_text=None):
+    def render_status_bar(self, uart_blink, timer_state, logging_armed, log_num, label_text=None):
         """
         Draw UART and timer indicators on the bottom row.
         """
@@ -400,20 +400,21 @@ class DisplayManager:
         if uart_blink:
             self.oled.text("U", 0, y, 1)
 
+        # Determine status text and width
         x_rec = 10
+        status_text = "REC"
+        if logging_armed:
+            status_text = "LOG{}".format(log_num)
+        
+        text_w = len(status_text) * 8
+
         if timer_state == "running":
-            self.oled.fill_rect(x_rec - 1, y - 1, 25, 10, 1)
-            if logging_armed:
-                self.oled.text("LOG", x_rec, y, 0)
-            else:
-                self.oled.text("REC", x_rec, y, 0)
+            self.oled.fill_rect(x_rec - 1, y - 1, text_w + 2, 10, 1)
+            self.oled.text(status_text, x_rec, y, 0)
         elif timer_state == "paused":
-            if logging_armed:
-                self.oled.text("LOG", x_rec, y, 1)
-            else:
-                self.oled.text("REC", x_rec, y, 1)
+            self.oled.text(status_text, x_rec, y, 1)
         elif timer_state == "reset" and logging_armed:
-            self.oled.text("LOG", x_rec, y, 1)
+            self.oled.text(status_text, x_rec, y, 1)
 
         if label_text:
             label_x = self.width - len(label_text) * 8
