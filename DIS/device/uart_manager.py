@@ -47,6 +47,8 @@ class UartManager:
                     vehicle.current = int(parts[5]) / 1000.0
                     vehicle.throttle_position = int(parts[6])
                     vehicle.throttle = int(parts[7])
+                    if vehicle.throttle > 100:
+                        vehicle.throttle = 100
                     vehicle.duty_cycle = int(parts[8])
         except Exception as e:
             print("Parse error:", e, "on line:", line)
