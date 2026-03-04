@@ -22,7 +22,6 @@ class Vehicle:
         self.current = 0.0
         self.throttle_position = 0.0
         self.throttle = 0
-        self.throttle_request = 0.0
         self.duty_cycle = 0.0
         self.eco = False
 
