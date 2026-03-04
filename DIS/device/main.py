@@ -40,6 +40,7 @@ last_target_send_time = 0
 print("DIS Initialized\n")
 
 while True:
+    if perf_monitor: perf_monitor.loop_start()
 
     # Time Calculation always runs
     current_time = time.ticks_ms()
@@ -93,6 +94,7 @@ while True:
 
     # --------- DEBUG LOGGING ----------------------
     if perf_monitor:
+        perf_monitor.loop_stop()
         if vehicle.timer_running:
             # Pass race data when the timer is active
             perf_monitor.update(

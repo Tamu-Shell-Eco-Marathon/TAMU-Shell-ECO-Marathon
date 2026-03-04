@@ -25,6 +25,17 @@ class OLEDDriver(framebuf.FrameBuffer):
         self.init_display()
         self._hw_invert = False
 
+        # Pre-compute the two column-address command bytes for each of the 64 rows.
+        # These never change, so computing them once avoids 3 arithmetic ops per row per frame.
+        self._col_cmds = []
+        for page in range(64):
+            column = page if self.rotate == 180 else (63 - page)
+            self._col_cmds.append(bytes([0x00 + (column & 0x0F), 0x10 + (column >> 4)]))
+
+        # A memoryview into the framebuffer so row slices are zero-copy views,
+        # instead of allocating a new bytearray object 64 times per frame.
+        self._mv = memoryview(self.buffer)
+
     def write_cmd(self, cmd):
         self.cs(1); self.dc(0); self.cs(0)
         self.spi.write(bytearray([cmd]))
@@ -81,13 +92,23 @@ class OLEDDriver(framebuf.FrameBuffer):
             self._hw_invert = invert
 
         self.write_cmd(0xB0)
-        for page in range(0, 64):
-            column = page if self.rotate == 180 else (63 - page)
-            self.write_cmd(0x00 + (column & 0x0F))
-            self.write_cmd(0x10 + (column >> 4))
-            start_index = page * 16
-            end_index = start_index + 16
-            self.write_data(self.buffer[start_index:end_index])
+
+        # Cache as locals: attribute lookup (self.x) is slower than local lookup inside a loop
+        cs = self.cs
+        dc = self.dc
+        spi = self.spi
+        mv = self._mv
+        col_cmds = self._col_cmds
+
+        for page in range(64):
+            # Send 2 column-address command bytes in one CS cycle (DC=0)
+            cs(1); dc(0); cs(0)
+            spi.write(col_cmds[page])
+            cs(1)
+            # Send 16 pixel data bytes (DC=1)
+            cs(1); dc(1); cs(0)
+            spi.write(mv[page * 16 : page * 16 + 16])
+            cs(1)
 
 class ButtonManager:
     def __init__(self):
