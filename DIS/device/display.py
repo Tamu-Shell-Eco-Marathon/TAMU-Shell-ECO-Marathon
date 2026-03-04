@@ -175,7 +175,7 @@ class ButtonManager:
                     vehicle.timer_state = 'running'
 
             if k1_hold:
-                if display.current_screen == 6:
+                if display.current_screen == 9:
                     display.display_mode = "MENU"
                     display.menu.reset()
                 else:
@@ -197,7 +197,7 @@ class DisplayManager:
         self.width = oled_driver.width
         self.height = oled_driver.height
         self.current_screen = 0
-        self.num_screens = 7
+        self.num_screens = 10
         self.display_mode = "CLUSTER" # Cluster, Menu, Race
         
         # Menu System
@@ -304,10 +304,19 @@ class DisplayManager:
                     self.render_gauge(vehicle.target_mph)
                     label = "TARGET"
                 elif self.current_screen == 6:
+                    self.render_gauge(vehicle.power_instant, precision=0)
+                    label = "WATTS"
+                elif self.current_screen == 7:
+                    self.render_gauge(vehicle.efficiency_instant)
+                    label = "MI/KWH"
+                elif self.current_screen == 8:
+                    self.render_gauge(vehicle.efficiency_total)
+                    label = "MI/KWH*"
+                elif self.current_screen == 9:
                     self.render_menu_gate()
 
             # 3. Render Status Bar
-            if self.current_screen < 6:
+            if self.current_screen < 9:
                 self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, label)
                 self.oled.text(vehicle.state[:1], 0, 0, 1) ## DEBUG - show vehicle state in upper right corner
 
