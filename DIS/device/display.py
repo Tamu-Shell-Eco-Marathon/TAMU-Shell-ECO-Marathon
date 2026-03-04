@@ -238,6 +238,7 @@ class DisplayManager:
         self._msg_top = None
         self._msg_bottom = None
         self._msg_until = 0  # ms timestamp; 0 means no active message
+        self._alert_queue = []
 
     def change_screen(self, delta):
         self.current_screen = (self.current_screen + delta) % self.num_screens
@@ -263,6 +264,10 @@ class DisplayManager:
                 alert_active = True
             else:
                 self.clear_alert()
+                if self._alert_queue:
+                    top, bottom, sec = self._alert_queue.pop(0)
+                    self.show_alert(top, bottom, sec)
+                    alert_active = True
 
         if alert_active:
             self.render_alert(self._msg_top, self._msg_bottom)
@@ -459,6 +464,13 @@ class DisplayManager:
         self._msg_bottom = bottom
         self._msg_until = time.ticks_add(now, ms)
         print(f"Alert: {top or ''} {bottom or ''}")
+
+    def queue_alert(self, top, bottom, seconds):
+        """Show alert immediately if none active, otherwise enqueue it."""
+        if self._msg_top is None:
+            self.show_alert(top, bottom, seconds)
+        else:
+            self._alert_queue.append((top, bottom, seconds))
 
     def clear_alert(self):
         """Clear any active alert immediately."""
