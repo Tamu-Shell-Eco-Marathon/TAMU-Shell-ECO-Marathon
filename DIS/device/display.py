@@ -286,7 +286,19 @@ class DisplayManager:
                     self.render_gauge(vehicle.voltage)
                     label = "VOLTS"
                 elif self.current_screen == 4:
-                    self.render_demo_distance(vehicle.distance_miles)
+                    # Dynamic Odometer
+                    dist = vehicle.distance_miles
+                    suppress = False
+                    if dist < 1.0:
+                        prec = 3
+                        suppress = True
+                    elif dist < 10.0:
+                        prec = 2
+                    elif dist < 100.0:
+                        prec = 1
+                    else: # dist >= 100.0
+                        prec = 0
+                    self.render_gauge(dist, precision=prec, suppress_leading_zero=suppress)
                     label = "MILES"
                 elif self.current_screen == 5:
                     self.render_gauge(vehicle.target_mph)
@@ -303,7 +315,7 @@ class DisplayManager:
         invert = False
         self.oled.show(invert=invert)
 
-    def render_gauge(self, value, precision=1):
+    def render_gauge(self, value, precision=1, suppress_leading_zero=False):
         # Format the number - need absolute value
         abs_value = abs(value)
         # Format string based on precision
@@ -313,21 +325,32 @@ class DisplayManager:
             int_part, dec_part = full_str.split(".")
         else:
             int_part, dec_part = full_str, ""
+            
+        # Handle leading zero suppression
+        if suppress_leading_zero and int_part == "0":
+            int_part = ""
 
         # --- 2. Draw Numbers ---
         # Draw the integer part
         char_width = self.w_digits_45.font.max_width()
+
+        # Determine Anchor Position (decimal point location), right-aligned to screen
+        if precision > 0:
+            anchor_x = self.width - 1 - self.DOT_SIZE - self.DOT_PADDING - precision * char_width
+        else:
+            anchor_x = self.width - 1
         int_width = len(int_part) * char_width
-        int_x = self.ANCHOR_X - self.DOT_PADDING - int_width
+        int_x = anchor_x - self.DOT_PADDING - int_width
         
-        self.w_digits_45.set_textpos(int_x, self.DIGIT_Y)
-        self.w_digits_45.printstring(int_part)
+        if int_part:
+            self.w_digits_45.set_textpos(int_x, self.DIGIT_Y)
+            self.w_digits_45.printstring(int_part)
 
         # Draw the decimal point if we have one
         if precision > 0:
             dot_y = self.w_digits_45.height - self.DOT_SIZE
-            self.oled.ellipse(self.ANCHOR_X, dot_y, self.DOT_SIZE, self.DOT_SIZE, 1, 1)
-            dec_x = self.ANCHOR_X + self.DOT_SIZE + self.DOT_PADDING
+            self.oled.ellipse(anchor_x, dot_y, self.DOT_SIZE, self.DOT_SIZE, 1, 1)
+            dec_x = anchor_x + self.DOT_SIZE + self.DOT_PADDING
             self.w_digits_45.set_textpos(dec_x, self.DIGIT_Y)
             self.w_digits_45.printstring(dec_part)
         
@@ -373,25 +396,6 @@ class DisplayManager:
         self.w_digits_med.printstring(str(s10))
         self.w_digits_med.set_textpos(self._time_x_s1, y)
         self.w_digits_med.printstring(str(s1))
-
-    def render_demo_distance(self, distance):
-        """Draw distance that caps at out .999 for demo purposes only"""
-        distance = max(0, min(int(distance * 1000), 999))
-
-        n1 = distance // 100
-        n2 = (distance // 10) % 10
-        n3 = distance % 10
-
-        y = self._big_slot_y
-
-        self.w_digits_large.set_textpos(0, y)
-        self.w_digits_large.printstring(".")
-        self.w_digits_large.set_textpos(14, y)
-        self.w_digits_large.printstring(str(n1))
-        self.w_digits_large.set_textpos(53, y)
-        self.w_digits_large.printstring(str(n2))
-        self.w_digits_large.set_textpos(91, y)
-        self.w_digits_large.printstring(str(n3))
 
     def render_status_bar(self, uart_blink, timer_state, logging_armed, label_text=None):
         """
