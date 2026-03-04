@@ -7,18 +7,27 @@ class PerformanceMonitor:
         self.verbose = verbose
         self.last_perf_print_ms = time.ticks_ms()
         self.draw_start_us = 0
+        self.loop_start_us = 0
 
         self.total_draw_time_us = 0
+        self.total_loop_time_us = 0
         self.draw_count = 0
 
+    def loop_start(self):
+        """Mark the start of a main loop iteration."""
+        self.loop_start_us = time.ticks_us()
+
+    def loop_stop(self):
+        """Mark the end of a main loop iteration."""
+        self.total_loop_time_us += time.ticks_diff(time.ticks_us(), self.loop_start_us)
+
     def start(self):
-        """Start the timer for a measurement."""
+        """Start the timer for a display draw measurement."""
         self.draw_start_us = time.ticks_us()
 
     def stop(self):
-        """Stop the timer and record the measurement."""
-        draw_duration_us = time.ticks_diff(time.ticks_us(), self.draw_start_us)
-        self.total_draw_time_us += draw_duration_us
+        """Stop the display draw timer and record the measurement."""
+        self.total_draw_time_us += time.ticks_diff(time.ticks_us(), self.draw_start_us)
         self.draw_count += 1
 
     def update(self, remaining_time=None, remaining_dist=None):
@@ -34,13 +43,16 @@ class PerformanceMonitor:
                 log_parts.append(verbose_str)
 
             # Always add performance part
-            avg_us = (self.total_draw_time_us / self.draw_count) if self.draw_count > 0 else 0
-            perf_str = f"Draw: {avg_us:.0f}us (n={self.draw_count})"
+            n = self.draw_count if self.draw_count > 0 else 1
+            avg_loop_us = self.total_loop_time_us / n
+            avg_draw_us = self.total_draw_time_us / n
+            perf_str = f"Loop: {avg_loop_us:.0f}us | Draw: {avg_draw_us:.0f}us (n={self.draw_count})"
             log_parts.append(perf_str)
 
             # Print the combined log line
             print(" | ".join(log_parts))
 
             # Reset for the next interval
+            self.total_loop_time_us = 0
             self.total_draw_time_us = 0
             self.draw_count = 0
