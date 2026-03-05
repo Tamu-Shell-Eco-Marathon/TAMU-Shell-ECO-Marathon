@@ -301,6 +301,16 @@ void commutate_open_loop(void) {
     }
 }
 
+void phase_max(){
+    int user_current_target_ma = throttle * PHASE_MAX_CURRENT_MA / 256;
+    current_target_ma = MAX( 0, MIN(user_current_target_ma, PHASE_MAX_CURRENT_MA));
+    duty_cycle += (current_target_ma - phase_current_ma) / CURRENT_CONTROL_LOOP_GAIN;  // Adjust duty cycle
+    duty_cycle = MAX(0, MIN(DUTY_CYCLE_MAX, duty_cycle));
+    bool do_synchronous = ticks_since_init > 16000;    // Enable synchronous switching after some delay
+    writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
+    return;
+}
+
 void adjust_duty(){ //clamp current, increment duty, clamp duty, synchronous?, writepwm
 
     int battery_current_limit_ma;
@@ -361,11 +371,4 @@ void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     adjust_duty();
 }
 
-void phase_max(){
-    int user_current_target_ma = throttle * PHASE_MAX_CURRENT_MA / 256;
-    current_target_ma = MAX( 0, MIN(user_current_target_ma, PHASE_MAX_CURRENT_MA));
-    duty_cycle += (current_target_ma - phase_current_ma) / CURRENT_CONTROL_LOOP_GAIN;  // Adjust duty cycle
-    duty_cycle = MAX(0, MIN(DUTY_CYCLE_MAX, duty_cycle));
-    bool do_synchronous = ticks_since_init > 16000;    // Enable synchronous switching after some delay
-    writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
-}
+
