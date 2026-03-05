@@ -27,8 +27,13 @@ void send_telemetry_uart() {
     char signal = 's';
     int throttle_mapped = (throttle_norm*100)/90;
     if (throttle_mapped > 100) throttle_mapped = 999; //indicate UCO activated
+    char mode;
+    if (race_mode) mode = 'r';
+    else if (test_mode) mode = 't';
+    else if (drive_mode) mode = 'd';
+    else mode = 'u'; // unknown
 
-    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d\n",
+    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d,%c\n",
              signal,
              motor_ticks,
              UCO,
@@ -37,7 +42,8 @@ void send_telemetry_uart() {
              battery_current_ma,
              throttle_norm,
              throttle_mapped,
-             duty_cycle_norm);
+             duty_cycle_norm,
+             mode);
 
     uart_puts(UART_ID, message_to_DIS);
     //printf("Message to DIS: %s\n", message_to_DIS);
