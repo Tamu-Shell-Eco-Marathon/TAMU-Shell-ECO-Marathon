@@ -215,6 +215,7 @@ const Command cmd_table[] = {
     {"ki",                     CMD_FLOAT,  (void*)&ki},
     {"kd",                     CMD_FLOAT,  (void*)&kd},
     {"BATTERY_MAX_CURRENT_MA", CMD_INT,    (void*)&BATTERY_MAX_CURRENT_MA},
+    {"PHASE_MAX_CURRENT_MA",   CMD_INT,    (void*)&PHASE_MAX_CURRENT_MA},
     {"LAUNCH_DUTY_CYCLE",      CMD_INT,    (void*)&LAUNCH_DUTY_CYCLE}, //enter value 0-100%
     {"cruise_error",           CMD_INT,    (void*)&cruise_error},
     {"test_current_ma",        CMD_INT,    (void*)&test_current_ma},
