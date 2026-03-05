@@ -143,10 +143,3 @@ void parse_telemetry(void) {
 
     msg_ready = false;
 }
-
-
-/*
-Ensure to set msg_ready to false after processing and only read when msg_ready is true to avoid partial message reading.
-*/
-
-/*Need  to accept target speed, mode select (race,test,drive), */

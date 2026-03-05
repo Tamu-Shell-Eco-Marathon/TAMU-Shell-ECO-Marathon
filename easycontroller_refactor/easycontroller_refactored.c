@@ -60,21 +60,21 @@ int main(void) {
                     printf("Target Speed: %f mph\n", target_speed);
                     printf("Target Current: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
-                    printf("Phase Current: %d mA\n", current_ma_smoothed);
+                    printf("Phase Current: %d mA\n", phase_current_ma_smoothed);
                     printf("\n");
                 }
                 if (drive_mode){
                     printf("Speed: %f mph\n", rpm * rpmtomph);
                     printf("Target Current: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
-                    printf("Phase Current: %d mA\n", current_ma_smoothed);
+                    printf("Phase Current: %d mA\n", phase_current_ma_smoothed);
                     printf("\n");
                 }
                 if (test_mode){
                     printf("Test Current: %d mA\n", test_current_ma);
                     printf("Current Target: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
-                    printf("Phase Current: %d mA\n", current_ma_smoothed);
+                    printf("Phase Current: %d mA\n", phase_current_ma_smoothed);
                     printf("Speed: %f mph\n", rpm * rpmtomph);
                     printf("UCO: %s\n", UCO ? "ON" : "OFF");
                     printf("\n");
