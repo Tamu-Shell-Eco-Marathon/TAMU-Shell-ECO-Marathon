@@ -37,7 +37,8 @@ void send_telemetry_uart() {
              battery_current_ma,
              throttle_norm,
              throttle_mapped,
-             duty_cycle_norm);
+             duty_cycle_norm
+             );
 
     uart_puts(UART_ID, message_to_DIS);
     //printf("Message to DIS: %s\n", message_to_DIS);
@@ -53,7 +54,7 @@ void read_telemetry(void) {
             message_from_DIS[msg_len] = '\0';  // terminate string
             msg_ready = true;                  // mark message ready
             msg_len = 0;                       // reset for next message
-            printf("Message from DIS: %s\n", message_from_DIS);
+            // printf("Message from DIS: %s\n", message_from_DIS);
             return;                            // stop after one full message
         }
 
