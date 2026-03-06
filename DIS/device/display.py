@@ -125,6 +125,8 @@ class ButtonManager:
         self._last_time_k1 = now
         self._k1_press_start = None
         self._k1_reset_fired = False
+        self._k0_press_start = None
+        self._k0_reset_fired = False
 
     def check_events(self):
         now = time.ticks_ms()
@@ -132,15 +134,35 @@ class ButtonManager:
         k1 = self.key1.value()
 
         k0_press = False
+        k0_long_press = False
+        k0_long_release = False
         k1_press = False
         k1_long_press = False
         k1_long_release = False
 
-        # KEY0 short press
+        # KEY0 press start
         if self._last_key0 == 1 and k0 == 0:
             if time.ticks_diff(now, self._last_time_k0) > self._debounce_ms:
+                self._k0_press_start = now
+                self._k0_reset_fired = False
+
+        # KEY0 long press detection
+        if self._k0_press_start is not None and k0 == 0 and not self._k0_reset_fired:
+            press_ms = time.ticks_diff(now, self._k0_press_start)
+            if press_ms >= self._longpress_ms:
+                k0_long_press = True
+                self._k0_reset_fired = True
+
+        # KEY0 release
+        if self._last_key0 == 0 and k0 == 1 and self._k0_press_start is not None:
+            press_ms = time.ticks_diff(now, self._k0_press_start)
+            if not self._k0_reset_fired and press_ms < self._longpress_ms:
                 k0_press = True
-                self._last_time_k0 = now
+            if self._k0_reset_fired:
+                k0_long_release = True
+                self._k0_reset_fired = False
+            self._k0_press_start = None
+            self._last_time_k0 = now
 
         # KEY1 press start
         if self._last_key1 == 1 and k1 == 0:
@@ -169,37 +191,37 @@ class ButtonManager:
         self._last_key0 = k0
         self._last_key1 = k1
 
-        return k0_press, k1_press, k1_long_press, k1_long_release
+        return k0_press, k0_long_press, k0_long_release, k1_press, k1_long_press, k1_long_release
 
     def update(self, vehicle, display, uart_manager):
         """
         Polls buttons and executes actions on the vehicle or display.
         """
-        k0_click, k1_click, k1_hold, k1_hold_release = self.check_events()
+        k0_click, k0_hold, k0_hold_release, k1_click, k1_hold, k1_hold_release = self.check_events()
         now = time.ticks_ms()
 
         # --- MENU MODE INPUTS ---
         if display.display_mode == "MENU":
-            display.menu.handle_input(display, vehicle, uart_manager, k0_click, k1_click, k1_hold)
+            if k0_hold:
+                display.display_mode = "CLUSTER"
+                return
+            display.menu.handle_input(display, vehicle, uart_manager, k0_click, k0_hold, k1_click, k1_hold)
             return
 
         # --- CLUSTER MODE INPUTS ---
         if display.display_mode == "CLUSTER":
+            if k0_click:
+                display.change_screen(1)
+
+            if k0_hold:
+                display.display_mode = "MENU"
+                display.menu.reset()
+
             if k1_click:
-                if vehicle.timer_running:
-                    vehicle._stored_elapsed_ticks += time.ticks_diff(now, vehicle._timer_start_ticks)
-                    vehicle.timer_running = False
-                    vehicle.timer_state = 'paused'
-                else:
-                    vehicle._timer_start_ticks = now
-                    vehicle.timer_running = True
-                    vehicle.timer_state = 'running'
+                display.change_screen(-1)
 
             if k1_hold:
-                if display.current_screen == 9:
-                    display.display_mode = "MENU"
-                    display.menu.reset()
-                else:
+                if vehicle.timer_running:
                     vehicle._stored_elapsed_ticks = 0
                     vehicle.distance_miles = 0
                     vehicle.energy_consumed = 0.0
@@ -207,10 +229,15 @@ class ButtonManager:
                     vehicle.timer_running = False
                     vehicle.timer_state = 'reset'
                     vehicle._timer_start_ticks = now
-                    display.show_alert("TIMER", "RESET", 2)
-
-            if k0_click:
-                display.change_screen(1)
+                    if vehicle.logging_armed:
+                        display.show_alert("LOG", "SAVED", 2)
+                        display.queue_alert("TIMER", "RESET", 2)
+                    else:
+                        display.show_alert("TIMER", "RESET", 2)
+                else:
+                    vehicle._timer_start_ticks = now
+                    vehicle.timer_running = True
+                    vehicle.timer_state = 'running'
 
 class DisplayManager:
     def __init__(self, oled_driver: OLEDDriver):
@@ -218,7 +245,7 @@ class DisplayManager:
         self.width = oled_driver.width
         self.height = oled_driver.height
         self.current_screen = 0
-        self.num_screens = 10
+        self.num_screens = 9
         self.display_mode = "CLUSTER" # Cluster, Menu, Race
         
         # Menu System
@@ -338,12 +365,10 @@ class DisplayManager:
                 elif self.current_screen == 8:
                     self.render_gauge(vehicle.efficiency_total)
                     label = "MI/KWH*"
-                elif self.current_screen == 9:
-                    self.render_menu_gate()
 
             # 3. Render Status Bar
-            if self.current_screen < 9:
-                self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, label)
+            if self.display_mode != "MENU":
+                self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, label, vehicle.log_file_number)
                 self.oled.text(vehicle.state[:1], 0, 0, 1) ## DEBUG - show vehicle state in upper right corner
 
         # 5. Present
@@ -432,7 +457,7 @@ class DisplayManager:
         self.w_digits_med.set_textpos(self._time_x_s1, y)
         self.w_digits_med.printstring(str(s1))
 
-    def render_status_bar(self, uart_blink, timer_state, logging_armed, label_text=None):
+    def render_status_bar(self, uart_blink, timer_state, logging_armed, label_text=None, log_file_number=0):
         """
         Draw UART and timer indicators on the bottom row.
         """
@@ -442,19 +467,14 @@ class DisplayManager:
             self.oled.text("U", 0, y, 1)
 
         x_rec = 10
+        log_label = ("LOG" + str(log_file_number)) if logging_armed else "REC"
         if timer_state == "running":
-            self.oled.fill_rect(x_rec - 1, y - 1, 25, 10, 1)
-            if logging_armed:
-                self.oled.text("LOG", x_rec, y, 0)
-            else:
-                self.oled.text("REC", x_rec, y, 0)
+            self.oled.fill_rect(x_rec - 1, y - 1, len(log_label) * 8 + 2, 10, 1)
+            self.oled.text(log_label, x_rec, y, 0)
         elif timer_state == "paused":
-            if logging_armed:
-                self.oled.text("LOG", x_rec, y, 1)
-            else:
-                self.oled.text("REC", x_rec, y, 1)
+            self.oled.text(log_label, x_rec, y, 1)
         elif timer_state == "reset" and logging_armed:
-            self.oled.text("LOG", x_rec, y, 1)
+            self.oled.text(log_label, x_rec, y, 1)
 
         if label_text:
             label_x = self.width - len(label_text) * 8
