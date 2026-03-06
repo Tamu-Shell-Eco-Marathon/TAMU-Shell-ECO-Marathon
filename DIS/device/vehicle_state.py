@@ -9,7 +9,7 @@ class Vehicle:
 
         # State of the vehicle
         self.state = "DRIVE" # DRIVE, TEST, RACE
-        self.logging_armed = False # Toggle via Menu
+        self.logging_armed = True # Defaults to ON, toggle via Menu
         self.log_file_number = 0
 
         # Measured signals from the motor controller
