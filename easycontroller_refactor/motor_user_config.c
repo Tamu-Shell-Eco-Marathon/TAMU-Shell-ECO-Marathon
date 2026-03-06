@@ -38,9 +38,9 @@ float CRUISE_INCREMENT_MAX = 500;
 //   kp: immediate current per mph of error     (start: 1000 mA/mph)
 //   ki: integral buildup per mph*second        (start: 500 mA/(mph*s))
 //   kd: damping per mph/second rate of change  (start: 200 mA*s/mph)
-float kp = 1000.0f;
-float ki =  500.0f;
-float kd =  200.0f;
+float kp = 10.0f;
+float ki =  5.0f;
+float kd =  2.0f;
 
 // How often the cruise PID recalculates.  50 Hz (20 ms) is well-matched to
 // how quickly vehicle speed changes; running faster wastes CPU and makes
