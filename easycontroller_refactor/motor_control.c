@@ -332,42 +332,63 @@ void adjust_duty(){ //clamp current, increment duty, clamp duty, synchronous?, w
     writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
 }
 
-void smart_cruise_func(){ //Cruise control target speed calculted on DIS
-    //Requires global target_speed to be set prior to calling function
-    current_target_ma = prev_current_target_ma; //Build off previous current
-    prev_speed = speed;
-    speed = (rpm * rpmtomph);
+void smart_cruise_func(void) {
+    // Persistent PID state -- survives between calls, auto-resets on re-activation
+    static float           i_integral     = 0.0f;
+    static float           prev_error     = 0.0f;
+    static absolute_time_t last_pid_time  = 0;
+    static absolute_time_t last_call_time = 0;
 
-    //time difference in us
-    float dt = absolute_time_diff_us(time_since_at_target_speed, get_absolute_time()); 
-    //Safety check
-    if (dt <= 0.0f) return;
+    absolute_time_t now = get_absolute_time();
 
-
-    //P term grows with error 
-    //I term grows with time from target speed 
-    //D term grows with rate of change of speed
-    float error = target_speed - speed;
-    float p_term = error;
-    float i_term = error*dt; 
-    float d_term = (speed - prev_speed) / dt;
-
-    //Calculate cruise increment from PID terms
-    cruise_increment = kp*p_term + ki*i_term - kd*d_term;
-
-    //Clamp cruise increment to 500 mA changes
-    cruise_increment = MAX(-1*CRUISE_INCREMENT_MAX, MIN(CRUISE_INCREMENT_MAX, cruise_increment)); 
-
-    //Calculate new target current and clamp to valid range
-    float calculated_current = current_target_ma + cruise_increment;
-    current_target_ma = (int)calculated_current;
-    current_target_ma = MAX(0, MIN(BATTERY_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to valid range
-
-    //Reset timer if within target speed band
-    if (speed >= target_speed - cruise_error*target_speed*.1 && speed <= target_speed + cruise_error*target_speed){
-        time_since_at_target_speed = get_absolute_time(); //Reset timer if within target speed band
+    // If cruise was inactive for > 500 ms (e.g. driver backed off throttle),
+    // reset accumulated state so stale integral doesn't cause a jolt on re-entry.
+    float idle_us = (float)absolute_time_diff_us(last_call_time, now);
+    if (idle_us > 500000.0f) {
+        speed         = rpm * rpmtomph;
+        prev_error    = target_speed - speed;
+        i_integral    = 0.0f;
+        last_pid_time = now;
     }
-    //Finally
+    last_call_time = now;
+
+    // Rate-limit PID updates -- vehicle speed changes on a seconds timescale,
+    // not at 16 kHz.  The inner current loop (adjust_duty) still runs every ISR.
+    float dt_us = (float)absolute_time_diff_us(last_pid_time, now);
+    if (dt_us < (float)PID_UPDATE_INTERVAL_US) {
+        adjust_duty();
+        return;
+    }
+    last_pid_time = now;
+    float dt_s = dt_us * 1e-6f;
+
+    // Speed measurement
+    prev_speed = speed;
+    speed      = rpm * rpmtomph;
+
+    // Error: positive when below target, negative when above
+    float error = target_speed - speed;
+
+    // P term
+    float p_term = kp * error;
+
+    // I term: true running integral -- accumulates error*time over all samples.
+    // Anti-windup clamp prevents the integral from growing unboundedly when
+    // the motor is against a physical limit (hill, standing start, etc).
+    i_integral += error * dt_s;
+    i_integral  = MAX(-I_WINDUP_LIMIT, MIN(I_WINDUP_LIMIT, i_integral));
+    float i_term = ki * i_integral;
+
+    // D term: derivative of *error* (not speed) so setpoint changes don't
+    // cause a sudden spike.  Uses the same dt as the integral.
+    float d_term = kd * (error - prev_error) / dt_s;
+    prev_error   = error;
+
+    // PID output is the battery current target directly in mA.
+    // Positive output accelerates, zero output coasts.
+    float output_ma = p_term + i_term + d_term;
+    current_target_ma = (int)MAX(0.0f, MIN((float)BATTERY_MAX_CURRENT_MA, output_ma));
+
     adjust_duty();
 }
 

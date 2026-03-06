@@ -35,3 +35,5 @@ extern float CRUISE_INCREMENT_MAX;
 extern float kp;
 extern float ki;
 extern float kd;
+extern int   PID_UPDATE_INTERVAL_US;  // How often the cruise PID recalculates (us)
+extern float I_WINDUP_LIMIT;          // Anti-windup clamp on the integral accumulator (mA)

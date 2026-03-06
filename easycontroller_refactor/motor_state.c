@@ -214,10 +214,12 @@ const Command cmd_table[] = {
     {"kp",                     CMD_FLOAT,  (void*)&kp},
     {"ki",                     CMD_FLOAT,  (void*)&ki},
     {"kd",                     CMD_FLOAT,  (void*)&kd},
+    {"I_WINDUP_LIMIT",         CMD_FLOAT,  (void*)&I_WINDUP_LIMIT},
+    {"PID_UPDATE_INTERVAL_US", CMD_INT,    (void*)&PID_UPDATE_INTERVAL_US},
     {"BATTERY_MAX_CURRENT_MA", CMD_INT,    (void*)&BATTERY_MAX_CURRENT_MA},
     {"PHASE_MAX_CURRENT_MA",   CMD_INT,    (void*)&PHASE_MAX_CURRENT_MA},
     {"LAUNCH_DUTY_CYCLE",      CMD_INT,    (void*)&LAUNCH_DUTY_CYCLE}, //enter value 0-100%
-    {"cruise_error",           CMD_INT,    (void*)&cruise_error},
+    {"cruise_error",           CMD_FLOAT,  (void*)&cruise_error},
     {"test_current_ma",        CMD_INT,    (void*)&test_current_ma},
     {"show_metrics",           CMD_TOGGLE, (void*)&show_metrics}
 };
