@@ -26,7 +26,7 @@ void send_telemetry_uart() {
     UCO = (throttle_norm >= 90) ? 1 : 0;
     char signal = 's';
     int throttle_mapped = (throttle_norm*100)/90;
-    if (throttle_mapped > 100) throttle_mapped = 999; //indicate UCO activated
+    if (throttle_mapped > 100) throttle_mapped = 100; //indicate UCO activated
     char mode;
     if (race_mode) mode = 'r';
     else if (test_mode) mode = 't';
