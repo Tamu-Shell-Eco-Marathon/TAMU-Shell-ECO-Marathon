@@ -38,7 +38,7 @@ class UartManager:
             self.last_message = line # Store for read_message()
             if line.startswith("s,"):
                 parts = line.split(',')
-                if len(parts) >= 9:
+                if len(parts) >= 10:
                     vehicle.motor_ticks = int(parts[1])
                     vehicle.smart_cruise = bool(int(parts[2]))
                     vehicle.motor_mph = float(parts[3])
@@ -50,6 +50,13 @@ class UartManager:
                     if vehicle.throttle > 100:
                         vehicle.throttle = 100
                     vehicle.duty_cycle = int(parts[8])
+                    mode_char = parts[9].strip()
+                    if mode_char == 'r':
+                        vehicle.state = "RACE"
+                    elif mode_char == 't':
+                        vehicle.state = "TEST"
+                    elif mode_char == 'd':
+                        vehicle.state = "DRIVE"
         except Exception as e:
             print("Parse error:", e, "on line:", line)
 
