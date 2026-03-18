@@ -53,7 +53,6 @@ int main(void) {
 
             if (show_metrics){
                 printf("Mode: %s\n", drive_mode ? "Drive" : (race_mode ? "Race" : "Test"));
-                printf("Launch Mode: %s\n", launch ? "ON" : "OFF");
                 printf("Battery Voltage: %.2f V\n", voltage_mv / 1000.0f);
                 if (race_mode){
                     printf("Speed: %f mph\n", rpm * rpmtomph);
