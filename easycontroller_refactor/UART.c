@@ -26,7 +26,7 @@ void send_telemetry_uart() {
     UCO = (throttle_norm >= 90) ? 1 : 0;
     char signal = 's';
     int throttle_mapped = (throttle_norm*100)/90;
-    if (throttle_mapped > 100) throttle_mapped = 999; //indicate UCO activated
+    if (throttle_mapped > 100) throttle_mapped = 100; //indicate UCO activated
 
     snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d\n",
              signal,
@@ -37,7 +37,8 @@ void send_telemetry_uart() {
              battery_current_ma,
              throttle_norm,
              throttle_mapped,
-             duty_cycle_norm);
+             duty_cycle_norm
+             );
 
     uart_puts(UART_ID, message_to_DIS);
     //printf("Message to DIS: %s\n", message_to_DIS);
@@ -53,7 +54,7 @@ void read_telemetry(void) {
             message_from_DIS[msg_len] = '\0';  // terminate string
             msg_ready = true;                  // mark message ready
             msg_len = 0;                       // reset for next message
-            printf("Message from DIS: %s\n", message_from_DIS);
+            // printf("Message from DIS: %s\n", message_from_DIS);
             return;                            // stop after one full message
         }
 
@@ -143,10 +144,3 @@ void parse_telemetry(void) {
 
     msg_ready = false;
 }
-
-
-/*
-Ensure to set msg_ready to false after processing and only read when msg_ready is true to avoid partial message reading.
-*/
-
-/*Need  to accept target speed, mode select (race,test,drive), */
