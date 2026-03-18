@@ -59,7 +59,7 @@ void read_telemetry(void) {
             message_from_DIS[msg_len] = '\0';  // terminate string
             msg_ready = true;                  // mark message ready
             msg_len = 0;                       // reset for next message
-            printf("Message from DIS: %s\n", message_from_DIS);
+            // printf("Message from DIS: %s\n", message_from_DIS);
             return;                            // stop after one full message
         }
 
@@ -149,10 +149,3 @@ void parse_telemetry(void) {
 
     msg_ready = false;
 }
-
-
-/*
-Ensure to set msg_ready to false after processing and only read when msg_ready is true to avoid partial message reading.
-*/
-
-/*Need  to accept target speed, mode select (race,test,drive), */

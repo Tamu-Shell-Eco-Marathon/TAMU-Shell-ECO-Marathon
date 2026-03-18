@@ -40,13 +40,15 @@ class UartManager:
                 parts = line.split(',')
                 if len(parts) >= 10:
                     vehicle.motor_ticks = int(parts[1])
-                    vehicle.eco = bool(int(parts[2]))
+                    vehicle.smart_cruise = bool(int(parts[2]))
                     vehicle.motor_mph = float(parts[3])
                     vehicle.rpm = int(vehicle.motor_mph / 0.04767) # Back-calculate RPM for physics consistency
                     vehicle.voltage = int(parts[4]) / 1000.0
                     vehicle.current = int(parts[5]) / 1000.0
                     vehicle.throttle_position = int(parts[6])
                     vehicle.throttle = int(parts[7])
+                    if vehicle.throttle > 100:
+                        vehicle.throttle = 100
                     vehicle.duty_cycle = int(parts[8])
                     mode_char = parts[9].strip()
                     if mode_char == 'r':

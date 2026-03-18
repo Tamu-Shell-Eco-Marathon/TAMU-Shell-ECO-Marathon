@@ -17,7 +17,7 @@ int adc_throttle = 0;
 int adc_bias = 0;
 int duty_cycle = 0;
 int voltage_mv = 0;
-int current_ma = 0;
+int phase_current_ma = 0;
 int current_target_ma = 0;
 int hall = 0;
 int test_current_ma = 1000; 
@@ -36,7 +36,7 @@ float prev_speed;
 absolute_time_t rpm_time_start = 0;
 absolute_time_t rpm_time_end = 0;
 
-int current_ma_smoothed = 0;
+int phase_current_ma_smoothed = 0;
 
 bool smart_cruise = false;
 bool record_motor_ticks = false;
@@ -215,6 +215,7 @@ const Command cmd_table[] = {
     {"ki",                     CMD_FLOAT,  (void*)&ki},
     {"kd",                     CMD_FLOAT,  (void*)&kd},
     {"BATTERY_MAX_CURRENT_MA", CMD_INT,    (void*)&BATTERY_MAX_CURRENT_MA},
+    {"PHASE_MAX_CURRENT_MA",   CMD_INT,    (void*)&PHASE_MAX_CURRENT_MA},
     {"LAUNCH_DUTY_CYCLE",      CMD_INT,    (void*)&LAUNCH_DUTY_CYCLE}, //enter value 0-100%
     {"cruise_error",           CMD_INT,    (void*)&cruise_error},
     {"test_current_ma",        CMD_INT,    (void*)&test_current_ma},

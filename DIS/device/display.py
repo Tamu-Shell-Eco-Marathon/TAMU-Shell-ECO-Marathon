@@ -25,6 +25,17 @@ class OLEDDriver(framebuf.FrameBuffer):
         self.init_display()
         self._hw_invert = False
 
+        # Pre-compute the two column-address command bytes for each of the 64 rows.
+        # These never change, so computing them once avoids 3 arithmetic ops per row per frame.
+        self._col_cmds = []
+        for page in range(64):
+            column = page if self.rotate == 180 else (63 - page)
+            self._col_cmds.append(bytes([0x00 + (column & 0x0F), 0x10 + (column >> 4)]))
+
+        # A memoryview into the framebuffer so row slices are zero-copy views,
+        # instead of allocating a new bytearray object 64 times per frame.
+        self._mv = memoryview(self.buffer)
+
     def write_cmd(self, cmd):
         self.cs(1); self.dc(0); self.cs(0)
         self.spi.write(bytearray([cmd]))
@@ -81,13 +92,23 @@ class OLEDDriver(framebuf.FrameBuffer):
             self._hw_invert = invert
 
         self.write_cmd(0xB0)
-        for page in range(0, 64):
-            column = page if self.rotate == 180 else (63 - page)
-            self.write_cmd(0x00 + (column & 0x0F))
-            self.write_cmd(0x10 + (column >> 4))
-            start_index = page * 16
-            end_index = start_index + 16
-            self.write_data(self.buffer[start_index:end_index])
+
+        # Cache as locals: attribute lookup (self.x) is slower than local lookup inside a loop
+        cs = self.cs
+        dc = self.dc
+        spi = self.spi
+        mv = self._mv
+        col_cmds = self._col_cmds
+
+        for page in range(64):
+            # Send 2 column-address command bytes in one CS cycle (DC=0)
+            cs(1); dc(0); cs(0)
+            spi.write(col_cmds[page])
+            cs(1)
+            # Send 16 pixel data bytes (DC=1)
+            cs(1); dc(1); cs(0)
+            spi.write(mv[page * 16 : page * 16 + 16])
+            cs(1)
 
 class ButtonManager:
     def __init__(self):
@@ -104,6 +125,8 @@ class ButtonManager:
         self._last_time_k1 = now
         self._k1_press_start = None
         self._k1_reset_fired = False
+        self._k0_press_start = None
+        self._k0_reset_fired = False
 
     def check_events(self):
         now = time.ticks_ms()
@@ -111,15 +134,35 @@ class ButtonManager:
         k1 = self.key1.value()
 
         k0_press = False
+        k0_long_press = False
+        k0_long_release = False
         k1_press = False
         k1_long_press = False
         k1_long_release = False
 
-        # KEY0 short press
+        # KEY0 press start
         if self._last_key0 == 1 and k0 == 0:
             if time.ticks_diff(now, self._last_time_k0) > self._debounce_ms:
+                self._k0_press_start = now
+                self._k0_reset_fired = False
+
+        # KEY0 long press detection
+        if self._k0_press_start is not None and k0 == 0 and not self._k0_reset_fired:
+            press_ms = time.ticks_diff(now, self._k0_press_start)
+            if press_ms >= self._longpress_ms:
+                k0_long_press = True
+                self._k0_reset_fired = True
+
+        # KEY0 release
+        if self._last_key0 == 0 and k0 == 1 and self._k0_press_start is not None:
+            press_ms = time.ticks_diff(now, self._k0_press_start)
+            if not self._k0_reset_fired and press_ms < self._longpress_ms:
                 k0_press = True
-                self._last_time_k0 = now
+            if self._k0_reset_fired:
+                k0_long_release = True
+                self._k0_reset_fired = False
+            self._k0_press_start = None
+            self._last_time_k0 = now
 
         # KEY1 press start
         if self._last_key1 == 1 and k1 == 0:
@@ -148,46 +191,53 @@ class ButtonManager:
         self._last_key0 = k0
         self._last_key1 = k1
 
-        return k0_press, k1_press, k1_long_press, k1_long_release
+        return k0_press, k0_long_press, k0_long_release, k1_press, k1_long_press, k1_long_release
 
     def update(self, vehicle, display, uart_manager):
         """
         Polls buttons and executes actions on the vehicle or display.
         """
-        k0_click, k1_click, k1_hold, k1_hold_release = self.check_events()
+        k0_click, k0_hold, k0_hold_release, k1_click, k1_hold, k1_hold_release = self.check_events()
         now = time.ticks_ms()
 
         # --- MENU MODE INPUTS ---
         if display.display_mode == "MENU":
-            display.menu.handle_input(display, vehicle, uart_manager, k0_click, k1_click, k1_hold)
+            if k0_hold:
+                display.display_mode = "CLUSTER"
+                return
+            display.menu.handle_input(display, vehicle, uart_manager, k0_click, k0_hold, k1_click, k1_hold)
             return
 
         # --- CLUSTER MODE INPUTS ---
         if display.display_mode == "CLUSTER":
+            if k0_click:
+                display.change_screen(1)
+
+            if k0_hold:
+                display.display_mode = "MENU"
+                display.menu.reset()
+
             if k1_click:
+                display.change_screen(-1)
+
+            if k1_hold:
                 if vehicle.timer_running:
-                    vehicle._stored_elapsed_ticks += time.ticks_diff(now, vehicle._timer_start_ticks)
+                    vehicle._stored_elapsed_ticks = 0
+                    vehicle.distance_miles = 0
+                    vehicle.energy_consumed = 0.0
+                    vehicle.efficiency_total = 0.0
                     vehicle.timer_running = False
-                    vehicle.timer_state = 'paused'
+                    vehicle.timer_state = 'reset'
+                    vehicle._timer_start_ticks = now
+                    if vehicle.logging_armed:
+                        display.show_alert("LOG", "SAVED", 2)
+                        display.queue_alert("TIMER", "RESET", 2)
+                    else:
+                        display.show_alert("TIMER", "RESET", 2)
                 else:
                     vehicle._timer_start_ticks = now
                     vehicle.timer_running = True
                     vehicle.timer_state = 'running'
-
-            if k1_hold:
-                if display.current_screen == 6:
-                    display.display_mode = "MENU"
-                    display.menu.reset()
-                else:
-                    vehicle._stored_elapsed_ticks = 0
-                    vehicle.distance_miles = 0
-                    vehicle.timer_running = False
-                    vehicle.timer_state = 'reset'
-                    vehicle._timer_start_ticks = now
-                    display.show_alert("TIMER", "RESET", 2)
-
-            if k0_click:
-                display.change_screen(1)
 
 class DisplayManager:
     def __init__(self, oled_driver: OLEDDriver):
@@ -195,7 +245,7 @@ class DisplayManager:
         self.width = oled_driver.width
         self.height = oled_driver.height
         self.current_screen = 0
-        self.num_screens = 7
+        self.num_screens = 9
         self.display_mode = "CLUSTER" # Cluster, Menu, Race
         
         # Menu System
@@ -236,6 +286,7 @@ class DisplayManager:
         self._msg_top = None
         self._msg_bottom = None
         self._msg_until = 0  # ms timestamp; 0 means no active message
+        self._alert_queue = []
 
     def change_screen(self, delta):
         self.current_screen = (self.current_screen + delta) % self.num_screens
@@ -261,6 +312,10 @@ class DisplayManager:
                 alert_active = True
             else:
                 self.clear_alert()
+                if self._alert_queue:
+                    top, bottom, sec = self._alert_queue.pop(0)
+                    self.show_alert(top, bottom, sec)
+                    alert_active = True
 
         if alert_active:
             self.render_alert(self._msg_top, self._msg_bottom)
@@ -284,24 +339,43 @@ class DisplayManager:
                     self.render_gauge(vehicle.voltage)
                     label = "VOLTS"
                 elif self.current_screen == 4:
-                    self.render_demo_distance(vehicle.distance_miles)
+                    # Dynamic Odometer
+                    dist = vehicle.distance_miles
+                    suppress = False
+                    if dist < 1.0:
+                        prec = 3
+                        suppress = True
+                    elif dist < 10.0:
+                        prec = 2
+                    elif dist < 100.0:
+                        prec = 1
+                    else: # dist >= 100.0
+                        prec = 0
+                    self.render_gauge(dist, precision=prec, suppress_leading_zero=suppress)
                     label = "MILES"
                 elif self.current_screen == 5:
                     self.render_gauge(vehicle.target_mph)
                     label = "TARGET"
                 elif self.current_screen == 6:
-                    self.render_menu_gate()
+                    self.render_gauge(vehicle.power_instant, precision=0)
+                    label = "WATTS"
+                elif self.current_screen == 7:
+                    self.render_gauge(vehicle.efficiency_instant)
+                    label = "MI/KWH"
+                elif self.current_screen == 8:
+                    self.render_gauge(vehicle.efficiency_total)
+                    label = "MI/KWH*"
 
             # 3. Render Status Bar
-            if self.current_screen < 6:
-                self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, label)
+            if self.display_mode != "MENU":
+                self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, label, vehicle.log_file_number)
                 self.oled.text(vehicle.state[:1], 0, 0, 1) ## DEBUG - show vehicle state in upper right corner
 
         # 5. Present
         invert = False
         self.oled.show(invert=invert)
 
-    def render_gauge(self, value, precision=1):
+    def render_gauge(self, value, precision=1, suppress_leading_zero=False):
         # Format the number - need absolute value
         abs_value = abs(value)
         # Format string based on precision
@@ -311,21 +385,32 @@ class DisplayManager:
             int_part, dec_part = full_str.split(".")
         else:
             int_part, dec_part = full_str, ""
+            
+        # Handle leading zero suppression
+        if suppress_leading_zero and int_part == "0":
+            int_part = ""
 
         # --- 2. Draw Numbers ---
         # Draw the integer part
         char_width = self.w_digits_45.font.max_width()
+
+        # Determine Anchor Position (decimal point location), right-aligned to screen
+        if precision > 0:
+            anchor_x = self.width - 1 - self.DOT_SIZE - self.DOT_PADDING - precision * char_width
+        else:
+            anchor_x = self.width - 1
         int_width = len(int_part) * char_width
-        int_x = self.ANCHOR_X - self.DOT_PADDING - int_width
+        int_x = anchor_x - self.DOT_PADDING - int_width
         
-        self.w_digits_45.set_textpos(int_x, self.DIGIT_Y)
-        self.w_digits_45.printstring(int_part)
+        if int_part:
+            self.w_digits_45.set_textpos(int_x, self.DIGIT_Y)
+            self.w_digits_45.printstring(int_part)
 
         # Draw the decimal point if we have one
         if precision > 0:
             dot_y = self.w_digits_45.height - self.DOT_SIZE
-            self.oled.ellipse(self.ANCHOR_X, dot_y, self.DOT_SIZE, self.DOT_SIZE, 1, 1)
-            dec_x = self.ANCHOR_X + self.DOT_SIZE + self.DOT_PADDING
+            self.oled.ellipse(anchor_x, dot_y, self.DOT_SIZE, self.DOT_SIZE, 1, 1)
+            dec_x = anchor_x + self.DOT_SIZE + self.DOT_PADDING
             self.w_digits_45.set_textpos(dec_x, self.DIGIT_Y)
             self.w_digits_45.printstring(dec_part)
         
@@ -372,26 +457,7 @@ class DisplayManager:
         self.w_digits_med.set_textpos(self._time_x_s1, y)
         self.w_digits_med.printstring(str(s1))
 
-    def render_demo_distance(self, distance):
-        """Draw distance that caps at out .999 for demo purposes only"""
-        distance = max(0, min(int(distance * 1000), 999))
-
-        n1 = distance // 100
-        n2 = (distance // 10) % 10
-        n3 = distance % 10
-
-        y = self._big_slot_y
-
-        self.w_digits_large.set_textpos(0, y)
-        self.w_digits_large.printstring(".")
-        self.w_digits_large.set_textpos(14, y)
-        self.w_digits_large.printstring(str(n1))
-        self.w_digits_large.set_textpos(53, y)
-        self.w_digits_large.printstring(str(n2))
-        self.w_digits_large.set_textpos(91, y)
-        self.w_digits_large.printstring(str(n3))
-
-    def render_status_bar(self, uart_blink, timer_state, logging_armed, label_text=None):
+    def render_status_bar(self, uart_blink, timer_state, logging_armed, label_text=None, log_file_number=0):
         """
         Draw UART and timer indicators on the bottom row.
         """
@@ -401,19 +467,14 @@ class DisplayManager:
             self.oled.text("U", 0, y, 1)
 
         x_rec = 10
+        log_label = ("LOG" + str(log_file_number)) if logging_armed else "REC"
         if timer_state == "running":
-            self.oled.fill_rect(x_rec - 1, y - 1, 25, 10, 1)
-            if logging_armed:
-                self.oled.text("LOG", x_rec, y, 0)
-            else:
-                self.oled.text("REC", x_rec, y, 0)
+            self.oled.fill_rect(x_rec - 1, y - 1, len(log_label) * 8 + 2, 10, 1)
+            self.oled.text(log_label, x_rec, y, 0)
         elif timer_state == "paused":
-            if logging_armed:
-                self.oled.text("LOG", x_rec, y, 1)
-            else:
-                self.oled.text("REC", x_rec, y, 1)
+            self.oled.text(log_label, x_rec, y, 1)
         elif timer_state == "reset" and logging_armed:
-            self.oled.text("LOG", x_rec, y, 1)
+            self.oled.text(log_label, x_rec, y, 1)
 
         if label_text:
             label_x = self.width - len(label_text) * 8
@@ -444,6 +505,13 @@ class DisplayManager:
         self._msg_bottom = bottom
         self._msg_until = time.ticks_add(now, ms)
         print(f"Alert: {top or ''} {bottom or ''}")
+
+    def queue_alert(self, top, bottom, seconds):
+        """Show alert immediately if none active, otherwise enqueue it."""
+        if self._msg_top is None:
+            self.show_alert(top, bottom, seconds)
+        else:
+            self._alert_queue.append((top, bottom, seconds))
 
     def clear_alert(self):
         """Clear any active alert immediately."""

@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
 
 #include "pico/stdlib.h"
 #include "hardware/pwm.h"
@@ -46,9 +48,9 @@ void on_adc_fifo(void) {
     throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
     throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
 
-    current_ma = (adc_isense - adc_bias) * CURRENT_SCALING;     // Since the current sensor is bidirectional, subtract the zero-current value and scale
-    current_ma_smoothed = (current_ma + (199 * current_ma_smoothed)) / 200;
-    battery_current_ma = (int)(((long long)current_ma_smoothed * duty_cycle * 6) / (DUTY_CYCLE_MAX * 10));
+    phase_current_ma = (adc_isense - adc_bias) * CURRENT_SCALING;     // Since the current sensor is bidirectional, subtract the zero-current value and scale
+    phase_current_ma_smoothed = (phase_current_ma + (199 * phase_current_ma_smoothed)) / 200;
+    battery_current_ma = (int)(((long long)phase_current_ma_smoothed * duty_cycle * 6) / (DUTY_CYCLE_MAX * 10));
 
     voltage_mv = (int)(adc_vsense * VOLTAGE_SCALING * 0.97722f);  // Calibrate bus voltage to match multimeter measurement
 
@@ -95,13 +97,14 @@ void on_adc_fifo(void) {
     
     if (CURRENT_CONTROL) {
         prev_current_target_ma = current_target_ma;
-        int user_current_target_ma = throttle * PHASE_MAX_CURRENT_MA / 256;  // Calculate the user-demanded phase current
+        int user_current_target_ma = throttle * BATTERY_MAX_CURRENT_MA / 256;  // Calculate the user-demanded phase current
 
         int battery_current_limit_ma;
         if (duty_cycle == 0) {
             battery_current_limit_ma = BATTERY_MAX_CURRENT_MA;
         } else {
-            battery_current_limit_ma = BATTERY_MAX_CURRENT_MA * DUTY_CYCLE_MAX / duty_cycle;
+            int64_t limit64 = ((int64_t)BATTERY_MAX_CURRENT_MA * DUTY_CYCLE_MAX) / duty_cycle;
+            battery_current_limit_ma = (limit64 > INT_MAX) ? INT_MAX : (int)limit64;
         }
         current_target_ma = MIN(user_current_target_ma, battery_current_limit_ma);
 
@@ -116,7 +119,7 @@ void on_adc_fifo(void) {
         
         if (race_mode){
             if (launch) {
-                if (current_ma < 80000) {
+                if (battery_current_ma < 40000 && phase_current_ma < 100000) {
                     duty_cycle = LAUNCH_DUTY_CYCLE;
                     writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
                 }
@@ -134,7 +137,7 @@ void on_adc_fifo(void) {
 
         if (drive_mode){
             if (launch) {
-                    if (current_ma < 80000) {
+                    if (battery_current_ma < 40000 && phase_current_ma < 100000) {
                         duty_cycle = LAUNCH_DUTY_CYCLE;
                         writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
                     }
@@ -142,7 +145,7 @@ void on_adc_fifo(void) {
                         launch = false; // Battery overload 
                         throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
                         throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
-                        user_current_target_ma = throttle * PHASE_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
+                        user_current_target_ma = throttle * BATTERY_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
                         current_target_ma = MIN(user_current_target_ma, battery_current_limit_ma);
                         THROTTLE_HIGH = 2000;
                         adjust_duty();
@@ -151,7 +154,7 @@ void on_adc_fifo(void) {
             else {
                 throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
                 throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
-                user_current_target_ma = throttle * PHASE_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
+                user_current_target_ma = throttle * BATTERY_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
                 current_target_ma = MIN(user_current_target_ma, battery_current_limit_ma);
                 THROTTLE_HIGH = 2000;
                 adjust_duty();
@@ -298,18 +301,33 @@ void commutate_open_loop(void) {
     }
 }
 
+void phase_max(){
+    int user_current_target_ma = throttle * PHASE_MAX_CURRENT_MA / 256;
+    current_target_ma = MAX( 0, MIN(user_current_target_ma, PHASE_MAX_CURRENT_MA));
+    duty_cycle += (current_target_ma - phase_current_ma) / CURRENT_CONTROL_LOOP_GAIN;  // Adjust duty cycle
+    duty_cycle = MAX(0, MIN(DUTY_CYCLE_MAX, duty_cycle));
+    bool do_synchronous = ticks_since_init > 16000;    // Enable synchronous switching after some delay
+    writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
+    return;
+}
+
 void adjust_duty(){ //clamp current, increment duty, clamp duty, synchronous?, writepwm
 
     int battery_current_limit_ma;
         if (duty_cycle == 0) {
             battery_current_limit_ma = BATTERY_MAX_CURRENT_MA;
         } else {
-            battery_current_limit_ma = BATTERY_MAX_CURRENT_MA * DUTY_CYCLE_MAX / duty_cycle;
+            int64_t limit64 = ((int64_t)BATTERY_MAX_CURRENT_MA * DUTY_CYCLE_MAX) / duty_cycle;
+            battery_current_limit_ma = (limit64 > INT_MAX) ? INT_MAX : (int)limit64;
         }
 
     bool do_synchronous = ticks_since_init > 16000;    // Enable synchronous switching after some delay
     current_target_ma = MIN(current_target_ma, battery_current_limit_ma); //Safety clamp again after launch and cruise adjustments
-    duty_cycle += (current_target_ma - current_ma) / CURRENT_CONTROL_LOOP_GAIN;  // Adjust duty cycle
+    if (phase_current_ma > PHASE_MAX_CURRENT_MA) {
+        phase_max();
+        return;
+    }
+    duty_cycle += (current_target_ma - battery_current_ma) / CURRENT_CONTROL_LOOP_GAIN;  // Adjust duty cycle
     duty_cycle = MAX(0, MIN(DUTY_CYCLE_MAX, duty_cycle));                        // Safety clamp duty cycle
     writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
 }
@@ -343,7 +361,7 @@ void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     //Calculate new target current and clamp to valid range
     float calculated_current = current_target_ma + cruise_increment;
     current_target_ma = (int)calculated_current;
-    current_target_ma = MAX(0, MIN(PHASE_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to valid range
+    current_target_ma = MAX(0, MIN(BATTERY_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to valid range
 
     //Reset timer if within target speed band
     if (speed >= target_speed - cruise_error*target_speed*.1 && speed <= target_speed + cruise_error*target_speed){
@@ -352,3 +370,5 @@ void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     //Finally
     adjust_duty();
 }
+
+

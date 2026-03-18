@@ -7,8 +7,8 @@ const bool IDENTIFY_HALLS_ON_BOOT = false;   // If true, controller will initial
 const bool IDENTIFY_HALLS_REVERSE = false;  // If true, will initialize the hall table to spin the motor backwards
 
 int LAUNCH_DUTY_CYCLE = 6553; // Duty cycle to use in launch mode. Can be set from 0 to DUTY_CYCLE_MAX, or 0-100 to specify a percentage of DUTY_CYCLE_MAX.
-int PHASE_MAX_CURRENT_MA = 32500;
-int BATTERY_MAX_CURRENT_MA = 32500;
+int PHASE_MAX_CURRENT_MA = 90000;
+int BATTERY_MAX_CURRENT_MA = 20000;
 
 int THROTTLE_LOW = 700;
 int THROTTLE_HIGH = 2000;
@@ -33,6 +33,6 @@ float cruise_error = 1.0f;
 int cruise_increment = 1; //miliamps
 float CRUISE_INCREMENT_MAX = 500;
 float kp=.001f;
-float ki=.05f;
+float ki=4.0f;
 float kd=.4f;
 
