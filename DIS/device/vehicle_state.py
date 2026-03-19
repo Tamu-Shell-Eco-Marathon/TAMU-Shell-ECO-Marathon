@@ -48,8 +48,8 @@ class Vehicle:
         # Constants
         self.TICKS_PER_MILE = 181515
         self.WHEEL_DIAMETER_IN = 16
-        self.GOAL_DISTANCE_MI = 1.0
-        self.GOAL_TIME_SEC = 4 * 60
+        self.GOAL_DISTANCE_MI = 9.56
+        self.GOAL_TIME_SEC = 35 * 60
 
         # Helpers
         self._last_update_ticks = time.ticks_ms()
