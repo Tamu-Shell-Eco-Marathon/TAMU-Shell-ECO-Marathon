@@ -60,6 +60,9 @@ class TargetSpeedIndicator:
         self.num_leds = num_leds
         self.np = neopixel.NeoPixel(Pin(data_pin), num_leds)
 
+        # Pre-allocated pixel buffer to avoid per-loop allocations
+        self._pixels = [(0, 0, 0)] * num_leds
+
         # Cache last frame to minimize np.write() calls
         self._last_pixels = [(0, 0, 0)] * num_leds
         self._last_race_mode = None
@@ -73,9 +76,13 @@ class TargetSpeedIndicator:
         # Start off
         self.off(force_write=True)
 
+    def _clear_pixels(self):
+        for i in range(self.num_leds):
+            self._pixels[i] = (0, 0, 0)
+
     def off(self, force_write=False):
-        pixels = [(0, 0, 0)] * self.num_leds
-        self._apply(pixels, force_write=force_write)
+        self._clear_pixels()
+        self._apply(self._pixels, force_write=force_write)
 
     def update(self, vehicle):
         current_speed = vehicle.motor_mph
@@ -91,8 +98,9 @@ class TargetSpeedIndicator:
 
         self._last_race_mode = True
 
-        # 2 Build a fresh frame in a Python list first
-        pixels = [(0, 0, 0)] * self.num_leds
+        # 2 Clear pre-allocated pixel buffer
+        self._clear_pixels()
+        pixels = self._pixels
 
         error = current_speed - target_speed  # 3 + fast, - slow
 
@@ -181,4 +189,4 @@ class TargetSpeedIndicator:
             self.np[mirrored_index] = col
 
         self.np.write()
-        self._last_pixels = pixels
+        self._last_pixels = list(pixels)
