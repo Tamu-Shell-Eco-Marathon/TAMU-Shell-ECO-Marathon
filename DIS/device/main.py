@@ -1,3 +1,4 @@
+import gc
 import hardware
 import utime as time
 from display import DisplayManager, OLEDDriver, ButtonManager
@@ -40,66 +41,54 @@ last_target_send_time = 0
 print("DIS Initialized\n")
 
 while True:
-    if perf_monitor: perf_monitor.loop_start()
+    try:
+        if perf_monitor: perf_monitor.loop_start()
 
-    # Time Calculation always runs
-    current_time = time.ticks_ms()
-    sample_dt = time.ticks_diff(current_time, last_sample_time) / 1000
-    last_sample_time = current_time
+        # Time Calculation always runs
+        current_time = time.ticks_ms()
+        sample_dt = time.ticks_diff(current_time, last_sample_time) / 1000
+        last_sample_time = current_time
 
-    # -------- Input Handling ---------------
-    uart_manager.update(vehicle)
+        # -------- Input Handling ---------------
+        uart_manager.update(vehicle)
 
-    if vehicle.state == "RACE":
-        if time.ticks_diff(current_time, last_target_send_time) >= 1000:
-            uart_manager.send("T,{:.1f}".format(vehicle.target_mph))
-            last_target_send_time = current_time
-
-
-    # --------- Derived Values (runs even with stale data)
-    vehicle.update_states(sample_dt, current_time)
-    # #BEGIN DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
-    # if DEBUG_TSI:
-    #     vehicle.state = "RACE"          # force race mode ON so LEDs are allowed
-    #     vehicle.smart_cruise = False
-        
-    #     vehicle.target_mph = 18.0
-    #     vehicle.motor_mph = 12.0 + (time.ticks_ms() // 1500) % 10  # 12..21 repeating
-    # #END DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
+        if vehicle.state == "RACE":
+            if time.ticks_diff(current_time, last_target_send_time) >= 1000:
+                uart_manager.send("T,{:.1f}".format(vehicle.target_mph))
+                last_target_send_time = current_time
 
 
+        # --------- Derived Values (runs even with stale data)
+        vehicle.update_states(sample_dt, current_time)
 
-    tsi.update(vehicle)
+        tsi.update(vehicle)
 
+        button_manager.update(vehicle, display, uart_manager)
 
-    # tsi.update(
-    #     current_speed=vehicle.motor_mph,
-    #     target_speed=vehicle.target_mph,
-    #     race_mode=(vehicle.state == "RACE"),
-    #     smart_cruise=vehicle.smart_cruise
-    # )
+        # --------- LOGGING --------------------------------
+        logger.update(vehicle, display)
 
+        # --------- DISPLAY (always runs) ------------------
+        if perf_monitor: perf_monitor.start()
 
-    button_manager.update(vehicle, display, uart_manager)
+        display.update(vehicle, uart_manager)
 
-    # --------- LOGGING --------------------------------
-    logger.update(vehicle, display)
+        if perf_monitor: perf_monitor.stop()
 
-    # --------- DISPLAY (always runs) ------------------
-    if perf_monitor: perf_monitor.start()
+        # --------- DEBUG LOGGING ----------------------
+        if perf_monitor:
+            perf_monitor.loop_stop()
+            if vehicle.timer_running:
+                perf_monitor.update(
+                    remaining_time=vehicle.remaining_time_seconds, remaining_dist=vehicle.remaining_distance_miles
+                )
+            else:
+                perf_monitor.update()
 
-    display.update(vehicle, uart_manager)
+        gc.collect()
 
-    if perf_monitor: perf_monitor.stop()
-
-    # --------- DEBUG LOGGING ----------------------
-    if perf_monitor:
-        perf_monitor.loop_stop()
-        if vehicle.timer_running:
-            # Pass race data when the timer is active
-            perf_monitor.update(
-                remaining_time=vehicle.remaining_time_seconds, remaining_dist=vehicle.remaining_distance_miles
-            )
-        else:
-            # Otherwise, just update for performance stats
-            perf_monitor.update()
+    except MemoryError:
+        gc.collect()
+        print("MemoryError: recovered via gc.collect()")
+    except Exception as e:
+        print("Main loop error:", e)
