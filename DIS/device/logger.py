@@ -16,6 +16,9 @@ class Logger:
             "Volts", "Amps", "PowerInst", "Throttle", "Duty", "RPM"
         ]
         
+        self._flush_interval = 10 # Flush to disk every N rows
+        self._rows_since_flush = 0
+
         self._ensure_directory()
         self._scan_next_log_num()
         self._prev_timer_running = False
@@ -59,7 +62,8 @@ class Logger:
             # Write Header
             header = ",".join(self.columns) + "\n"
             self.file.write(header)
-            self.file.flush() # Ensure header is written
+            self.file.flush()
+            self._rows_since_flush = 0
             self.is_logging = True
             self.last_log_time = time.ticks_ms()
         except Exception as e:
@@ -77,6 +81,7 @@ class Logger:
 
         try:
             if self.file:
+                self.file.flush()
                 self.file.close()
                 self.file = None
                 if display:
@@ -144,7 +149,10 @@ class Logger:
             line = ",".join(row_data) + "\n"
             if self.file:
                 self.file.write(line)
-                self.file.flush() # Critical: Save to disk immediately
+                self._rows_since_flush += 1
+                if self._rows_since_flush >= self._flush_interval:
+                    self.file.flush()
+                    self._rows_since_flush = 0
             
         except Exception as e:
             print(f"Log Write Error: {e}")

@@ -1,7 +1,7 @@
 class UartManager:
     def __init__(self, uart_instance):
         self.uart = uart_instance
-        self.buffer = ""
+        self.buffer = bytearray()
 
         self.uart_blink = False
         self.new_data = False # Flag to indicate if new data was parsed
@@ -16,15 +16,16 @@ class UartManager:
         if self.uart.any():
             data = self.uart.read()
             if data:
-                # Convert bytes to printable characters
+                # Append printable characters and newlines into bytearray
                 for b in data:
                     if 32 <= b <= 126 or b == 10:
-                        self.buffer += chr(b)
+                        self.buffer.append(b)
 
                 # Process complete lines
-                while "\n" in self.buffer:
-                    line, self.buffer = self.buffer.split("\n", 1)
-                    line = line.strip()
+                while b'\n' in self.buffer:
+                    idx = self.buffer.index(b'\n')
+                    line = str(self.buffer[:idx], 'utf-8').strip()
+                    self.buffer = self.buffer[idx + 1:]
                     if not line:
                         continue
 
