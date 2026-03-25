@@ -19,6 +19,7 @@ DEBUG_TSI = False
 #END DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
 DEBUG_PERFORMANCE = False
 DEBUG_VERBOSE = False
+DEBUG_TIMER_SYNC = False
 perf_monitor = (
     PerformanceMonitor(verbose=DEBUG_VERBOSE) if DEBUG_PERFORMANCE else None
 )
@@ -36,6 +37,7 @@ last_sample_time = time.ticks_ms()
 elapsed_time = 0.0
 sample_dt = 0.0
 last_target_send_time = 0
+last_sync_print_time = 0
 # ---------------------------------------------------
 
 print("DIS Initialized\n")
@@ -51,6 +53,29 @@ while True:
 
         # -------- Input Handling ---------------
         uart_manager.update(vehicle)
+
+        # -------- Race Start ACK ---------------
+        if vehicle.race_started_ack:
+            vehicle.race_started_ack = False
+            display.show_alert("RACE", "START", 2)
+
+        # -------- Race Timer Sync ---------------
+        if vehicle.timer_running and vehicle.mc_race_seconds > 0:
+            mismatch = vehicle.timer_elapsed_seconds - vehicle.mc_race_seconds
+            if abs(mismatch) > 5.0:
+                if vehicle.mc_race_seconds > vehicle.timer_elapsed_seconds:
+                    # MC has longer timer — DIS adopts MC's time
+                    vehicle._stored_elapsed_ticks = int(vehicle.mc_race_seconds * 1000)
+                    vehicle._timer_start_ticks = current_time
+                elif vehicle.timer_elapsed_seconds > vehicle.mc_race_seconds:
+                    # DIS has longer timer — tell MC to sync
+                    uart_manager.send("A,sync,{:.1f}".format(vehicle.timer_elapsed_seconds))
+
+            if DEBUG_TIMER_SYNC:
+                if time.ticks_diff(current_time, last_sync_print_time) >= 1000:
+                    print("SYNC: DIS={:.1f}s MC={:.1f}s mismatch={:.1f}s".format(
+                        vehicle.timer_elapsed_seconds, vehicle.mc_race_seconds, mismatch))
+                    last_sync_print_time = current_time
 
         if vehicle.state == "RACE":
             if time.ticks_diff(current_time, last_target_send_time) >= 1000:

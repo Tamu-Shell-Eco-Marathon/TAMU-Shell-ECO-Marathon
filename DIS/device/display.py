@@ -238,6 +238,9 @@ class ButtonManager:
                     vehicle._timer_start_ticks = now
                     vehicle.timer_running = True
                     vehicle.timer_state = 'running'
+                    # In RACE mode, notify motor controller to start its race timer
+                    if vehicle.state == "RACE":
+                        uart_manager.send("A,start")
 
 class DisplayManager:
     def __init__(self, oled_driver: OLEDDriver):

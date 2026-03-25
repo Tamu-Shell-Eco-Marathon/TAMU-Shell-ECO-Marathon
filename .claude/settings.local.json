@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -rn \"A|a\" /c/Users/jimmy/SEM/Eco-marathon/TAMU-Shell-ECO-Marathon --include=*.c --include=*.h --include=*.py)",
+      "Bash(grep -rn \"TODO\\\\|FIXME\\\\|XXX\\\\|HACK\" /c/Users/jimmy/SEM/Eco-marathon/TAMU-Shell-ECO-Marathon --include=*.c --include=*.h --include=*.py)",
+      "Bash(grep -rn \"A,\\\\|A ,\" /c/Users/jimmy/SEM/Eco-marathon/TAMU-Shell-ECO-Marathon --include=*.c --include=*.h --include=*.py)"
+    ]
+  }
+}
