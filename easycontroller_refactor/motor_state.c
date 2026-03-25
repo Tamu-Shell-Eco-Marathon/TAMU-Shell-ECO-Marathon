@@ -15,12 +15,12 @@ int adc_vsense = 0;
 int adc_throttle = 0;
 
 int adc_bias = 0;
-int duty_cycle = 0;
-int voltage_mv = 0;
-int phase_current_ma = 0;
-int current_target_ma = 0;
+volatile int duty_cycle = 0;
+volatile int voltage_mv = 0;
+volatile int phase_current_ma = 0;
+volatile int current_target_ma = 0;
 int hall = 0;
-int test_current_ma = 1000; 
+volatile int test_current_ma = 1000;
 int test_time_us = 5000000; // 5 seconds
 uint motorState = 0;
 int fifo_level = 0;
@@ -36,19 +36,19 @@ float prev_speed;
 absolute_time_t rpm_time_start = 0;
 absolute_time_t rpm_time_end = 0;
 
-int phase_current_ma_smoothed = 0;
+volatile int phase_current_ma_smoothed = 0;
 
 bool smart_cruise = false;
 bool record_motor_ticks = false;
-int battery_current_ma = 0;
+volatile int battery_current_ma = 0;
 int prev_current_target_ma = 0;
 absolute_time_t time_since_last_movement = 0;
-uint32_t motor_ticks = 0;
-bool UCO = false;
+volatile uint32_t motor_ticks = 0;
+volatile bool UCO = false;
 bool at_target_speed = false;
-bool race_mode = true;
-bool test_mode = false;
-bool drive_mode = false;
+volatile bool race_mode = true;
+volatile bool test_mode = false;
+volatile bool drive_mode = false;
 absolute_time_t time_since_at_target_speed = 0;
 
 
@@ -254,15 +254,26 @@ void process_serial_input() {
                 
                 case CMD_FLOAT: {
                     float* val = (float*)cmd_table[i].target;
-                    *val = strtof(tokens[1], NULL);
+                    char *endptr;
+                    float parsed = strtof(tokens[1], &endptr);
+                    if (endptr == tokens[1]) {
+                        printf(">>> Error: '%s' is not a valid number.\n", tokens[1]);
+                        return;
+                    }
+                    *val = parsed;
                     printf(">>> %s updated to: %.4f\n", cmd_table[i].name, *val);
                     break;
                 }
-                
+
                 case CMD_INT: {
                     int* val = (int*)cmd_table[i].target;
-                    int raw = (int)strtof(tokens[1], NULL);
-                    *val = raw;
+                    char *endptr;
+                    long parsed = strtol(tokens[1], &endptr, 10);
+                    if (endptr == tokens[1]) {
+                        printf(">>> Error: '%s' is not a valid integer.\n", tokens[1]);
+                        return;
+                    }
+                    *val = (int)parsed;
                     printf(">>> %s updated to: %d\n", cmd_table[i].name, *val);
                     break;
                 }

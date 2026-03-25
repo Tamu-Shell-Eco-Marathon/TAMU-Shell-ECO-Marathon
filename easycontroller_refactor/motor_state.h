@@ -13,12 +13,12 @@ extern int adc_vsense;
 extern int adc_throttle;
 
 extern int adc_bias;
-extern int duty_cycle;
-extern int voltage_mv;
-extern int phase_current_ma;
-extern int current_target_ma;
+extern volatile int duty_cycle;
+extern volatile int voltage_mv;
+extern volatile int phase_current_ma;
+extern volatile int current_target_ma;
 extern int hall;
-extern int test_current_ma;
+extern volatile int test_current_ma;
 extern int test_time_us;
 extern uint motorState;
 extern int fifo_level;
@@ -34,20 +34,20 @@ extern float prev_speed;
 extern absolute_time_t rpm_time_start;
 extern absolute_time_t rpm_time_end;
 
-extern int phase_current_ma_smoothed;
+extern volatile int phase_current_ma_smoothed;
 
 extern bool smart_cruise;
-extern int battery_current_ma;
+extern volatile int battery_current_ma;
 extern int prev_current_target_ma;
 extern absolute_time_t time_since_last_movement;
-extern uint32_t motor_ticks;
+extern volatile uint32_t motor_ticks;
 extern bool at_target_speed;
-extern bool UCO;
-extern bool race_mode;
-extern bool test_mode;
-extern bool drive_mode;
+extern volatile bool UCO;
+extern volatile bool race_mode;
+extern volatile bool test_mode;
+extern volatile bool drive_mode;
 extern bool show_metrics;
-extern float target_speed;
+extern volatile float target_speed;
 extern absolute_time_t time_since_at_target_speed;
 
 // Serial helpers (used by debug modes)
