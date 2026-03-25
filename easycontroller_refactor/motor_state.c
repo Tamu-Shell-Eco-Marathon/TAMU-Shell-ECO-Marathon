@@ -46,7 +46,6 @@ absolute_time_t time_since_last_movement = 0;
 uint32_t motor_ticks = 0;
 bool UCO = false;
 bool at_target_speed = false;
-volatile bool launch = false;
 bool race_mode = true;
 bool test_mode = false;
 bool drive_mode = false;
@@ -216,7 +215,6 @@ const Command cmd_table[] = {
     {"kd",                     CMD_FLOAT,  (void*)&kd},
     {"BATTERY_MAX_CURRENT_MA", CMD_INT,    (void*)&BATTERY_MAX_CURRENT_MA},
     {"PHASE_MAX_CURRENT_MA",   CMD_INT,    (void*)&PHASE_MAX_CURRENT_MA},
-    {"LAUNCH_DUTY_CYCLE",      CMD_INT,    (void*)&LAUNCH_DUTY_CYCLE}, //enter value 0-100%
     {"cruise_error",           CMD_INT,    (void*)&cruise_error},
     {"test_current_ma",        CMD_INT,    (void*)&test_current_ma},
     {"show_metrics",           CMD_TOGGLE, (void*)&show_metrics}
@@ -264,15 +262,8 @@ void process_serial_input() {
                 case CMD_INT: {
                     int* val = (int*)cmd_table[i].target;
                     int raw = (int)strtof(tokens[1], NULL);
-
-                    // For LAUNCH_DUTY_CYCLE, allow 0-100 to mean percent of DUTY_CYCLE_MAX.
-                    if (strcmp(cmd_table[i].name, "LAUNCH_DUTY_CYCLE") == 0 && raw >= 0 && raw <= 100) {
-                        *val = (raw * DUTY_CYCLE_MAX) / 100;
-                        printf(">>> %s updated to: %d (%d%% of max %d)\n", cmd_table[i].name, *val, raw, DUTY_CYCLE_MAX);
-                    } else {
-                        *val = raw;
-                        printf(">>> %s updated to: %d\n", cmd_table[i].name, *val);
-                    }
+                    *val = raw;
+                    printf(">>> %s updated to: %d\n", cmd_table[i].name, *val);
                     break;
                 }
                 

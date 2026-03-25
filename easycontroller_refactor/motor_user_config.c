@@ -6,7 +6,6 @@
 const bool IDENTIFY_HALLS_ON_BOOT = false;   // If true, controller will initialize the hall table by slowly spinning the motor
 const bool IDENTIFY_HALLS_REVERSE = false;  // If true, will initialize the hall table to spin the motor backwards
 
-int LAUNCH_DUTY_CYCLE = 6553; // Duty cycle to use in launch mode. Can be set from 0 to DUTY_CYCLE_MAX, or 0-100 to specify a percentage of DUTY_CYCLE_MAX.
 int PHASE_MAX_CURRENT_MA = 90000;
 int BATTERY_MAX_CURRENT_MA = 20000;
 
@@ -15,7 +14,6 @@ int THROTTLE_HIGH = 2000;
 
 int ECO_CURRENT_ma = 6000;
 float rpmtomph = 0.04767f; // Conversion from rpm to mph
-float launch_speed_mph = 1.43f; // Launch mode turns off above this vehicle speed
 
 // Correct Hall Table !!!DO NOT CHANGE!!!
 uint8_t hallToMotor[8] = {255, 3, 1, 2, 5, 4, 0, 255};
