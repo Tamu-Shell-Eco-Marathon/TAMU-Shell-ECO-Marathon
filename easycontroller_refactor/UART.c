@@ -70,7 +70,7 @@ void read_telemetry(void) {
             message_from_DIS[msg_len] = '\0';  // terminate string
             msg_ready = true;                  // mark message ready
             msg_len = 0;                       // reset for next message
-            // printf("Message from DIS: %s\n", message_from_DIS);
+            printf("Message from DIS: %s\n", message_from_DIS);
             return;                            // stop after one full message
         }
 
