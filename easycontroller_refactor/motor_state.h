@@ -43,7 +43,6 @@ extern absolute_time_t time_since_last_movement;
 extern uint32_t motor_ticks;
 extern bool at_target_speed;
 extern bool UCO;
-extern volatile bool launch;
 extern bool race_mode;
 extern bool test_mode;
 extern bool drive_mode;

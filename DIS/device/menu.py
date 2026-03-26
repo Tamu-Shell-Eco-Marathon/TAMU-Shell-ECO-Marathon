@@ -17,7 +17,7 @@ class Screen:
     def __init__(self, manager: "Menu"):
         self.manager = manager
 
-    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k1: bool, k1_hold: bool):
+    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k0_hold: bool, k1: bool, k1_hold: bool):
         pass
 
     def draw(self, display: "DisplayManager", vehicle: "Vehicle"):
@@ -37,7 +37,7 @@ class ListScreen(Screen):
         self.options = options # List of (Label, Callback)
         self.index = 0
 
-    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k1: bool, k1_hold: bool):
+    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k0_hold: bool, k1: bool, k1_hold: bool):
         if k0: # Scroll Down
             self.index = (self.index + 1) % len(self.options)
         if k1: # Scroll Up
@@ -66,31 +66,33 @@ class NumberInputScreen(Screen):
     """Screen for editing a number and sending it."""
     def __init__(self, manager: "Menu"):
         super().__init__(manager)
-        self.nav_options = ["EXIT", "EDIT", "SEND"]
+        self.nav_options = ["EDIT", "SEND"]
         self.nav_index = 0
         self.state = "NAV" # NAV or EDIT
         self.value = 0
 
-    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k1: bool, k1_hold: bool):
+    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k0_hold: bool, k1: bool, k1_hold: bool):
         if self.state == "NAV":
-            if k0: self.nav_index = (self.nav_index + 1) % len(self.nav_options)
-            if k1: self.nav_index = (self.nav_index - 1) % len(self.nav_options)
-            
+            if k0: self.nav_index = (self.nav_index - 1) % len(self.nav_options)
+            if k0_hold:
+                self.manager.pop_screen()
+                return
+            if k1: self.nav_index = (self.nav_index + 1) % len(self.nav_options)
+
             if k1_hold:
                 selection = self.nav_options[self.nav_index]
-                if selection == "EXIT":
-                    self.manager.pop_screen()
-                elif selection == "EDIT":
+                if selection == "EDIT":
                     self.state = "EDIT"
                 elif selection == "SEND":
                     cmd = f"M,t,{self.value}"
-                    self.manager.push_screen(SendingScreen(self.manager, cmd, "TEST", on_success=lambda: setattr(vehicle, 'state', 'TEST')))
-        
+                    self.manager.send_command(uart, cmd, "TEST", on_success=lambda: setattr(vehicle, 'state', 'TEST'))
+                    self.manager.pop_screen()
+
         elif self.state == "EDIT":
-            if k0 and self.value > 0: self.value -= 1 # Don't want to set a negative value
-            if k1: self.value += 1
-            if k1_hold:
-                self.state = "NAV"
+            if k0 and self.value > 0: self.value -= 1
+            if k0_hold: self.state = "NAV"
+            elif k1: self.value += 1
+            elif k1_hold: self.state = "NAV"
 
     def draw(self, display: "DisplayManager", vehicle: "Vehicle"):
         # Draw Left Menu
@@ -111,64 +113,29 @@ class NumberInputScreen(Screen):
         display.w_digits_45.set_textpos(70, 10)
         display.w_digits_45.printstring(str(self.value))
 
-class SendingScreen(Screen):
-    """Blocking screen that sends a command and waits for ACK."""
-    def __init__(self, manager: "Menu", command: str, alert_text: str, wait_for_ack: bool = False, on_success=None):
-        super().__init__(manager)
-        self.command = command
-        self.alert_text = alert_text
-        self.wait_for_ack = wait_for_ack
-        self.sent = False
-        self.on_success = on_success
-
-    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k1: bool, k1_hold: bool):
-        # 1. Send Command Once
-        if not self.sent:
-            uart.send(self.command)
-            self.sent = True
-            if not self.wait_for_ack:
-                self.finish(display)
-                return
-
-        # 2. Poll for ACK
-        msg = uart.read_message()
-        if msg:
-            expected = self.command + ",ACK"
-            # Simple check: if we get an ACK or just the command echoed back (depending on controller logic)
-            # For now, strict check based on prompt requirements
-            if msg == expected or "ACK" in msg: 
-                self.finish(display)
-
-    def finish(self, display: "DisplayManager"):
-        if self.on_success:
-            self.on_success()
-        self.manager.pop_screen() # Pop SendingScreen
-        # If we came from NumberInput, we might want to pop that too, but prompt implies just pop this.
-        display.show_alert(self.alert_text, "MODE", 2)
-
-    def draw(self, display: "DisplayManager", vehicle: "Vehicle"):
-        display.oled.text("Sending...", 20, 25, 1)
-        display.oled.text(self.command, 10, 40, 1)
-
 # ============================================================================
 # MENU MANAGER
 # ============================================================================
 class Menu:
     def __init__(self):
         self.stack = []
+        self.ack_command = None
+        self.ack_alert = None
+        self.ack_callback = None
         self.reset()
 
     def reset(self):
         """Resets the menu to the main list."""
         self.stack = []
+
         
         # Define Main Menu Options
         main_options = [
-            ("EXIT", self._exit_menu),
             (lambda v: "LOGGING: " + ("ON" if v.logging_armed else "OFF"), self._toggle_logging),
-            ("SET DRIVE MODE", lambda d, v, u: self.push_screen(SendingScreen(self, "M,d", "DRIVE", on_success=lambda: setattr(v, 'state', 'DRIVE')))),
+            ("SET DRIVE MODE", lambda d, v, u: self.send_command(u, "M,d", "DRIVE", on_success=lambda: setattr(v, 'state', 'DRIVE'))),
             ("SET TEST MODE", lambda d, v, u: self.push_screen(NumberInputScreen(self))),
-            ("SET RACE MODE", lambda d, v, u: self.push_screen(SendingScreen(self, "M,r", "RACE", on_success=lambda: setattr(v, 'state', 'RACE')))),
+            ("SET RACE MODE", lambda d, v, u: self.send_command(u, "M,r", "RACE", on_success=lambda: setattr(v, 'state', 'RACE'))),
+
             ("SET MOTOR LIMIT", lambda d, v, u: None)
         ]
         self.push_screen(ListScreen(self, main_options))
@@ -181,15 +148,30 @@ class Menu:
         if self.stack:
             self.stack.pop()
 
-    def _exit_menu(self, display, vehicle, uart):
-        display.display_mode = "CLUSTER"
-
     def _toggle_logging(self, display, vehicle, uart):
         vehicle.logging_armed = not vehicle.logging_armed
 
-    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k1: bool, k1_hold: bool):
+    def send_command(self, uart: "UartManager", command: str, alert_text: str, on_success=None):
+        uart.send(command)
+        self.ack_command = command
+        self.ack_alert = alert_text
+        self.ack_callback = on_success
+
+    def check_ack(self, display: "DisplayManager", uart: "UartManager"):
+        if self.ack_command:
+            msg = uart.read_message()
+            if msg and ("ACK" in msg or msg == self.ack_command):
+                if self.ack_callback:
+                    self.ack_callback()
+                display.show_alert(self.ack_alert, "MODE", 2)
+                self.ack_command = None
+                self.ack_alert = None
+                self.ack_callback = None
+
+    def handle_input(self, display: "DisplayManager", vehicle: "Vehicle", uart: "UartManager", k0: bool, k0_hold: bool, k1: bool, k1_hold: bool):
+        self.check_ack(display, uart)
         if self.stack:
-            self.stack[-1].handle_input(display, vehicle, uart, k0, k1, k1_hold)
+            self.stack[-1].handle_input(display, vehicle, uart, k0, k0_hold, k1, k1_hold)
 
     def render_menu_list(self, display: "DisplayManager", vehicle: "Vehicle"):
         if self.stack:

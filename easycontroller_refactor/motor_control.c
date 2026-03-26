@@ -56,34 +56,15 @@ void on_adc_fifo(void) {
 
 
     //-------------------------------Motor drive operation logic tree-----------------------------------------------
-    launch = false;
     //race_mode = true; //Temporary default mode for testing
     UCO = false; //User Configured Operation currently used for smart cruise
     if (race_mode){
-        if (rpm < 30 && throttle != 0){
-            launch = true;
-        }
-        else if (adc_throttle > 2000){ 
+        if (adc_throttle > 2000){
             UCO = true;
-        }
-        else {
-            launch = false;
-            UCO = false;
-        }
-    }
-    else if (drive_mode){
-        UCO = false;
-        THROTTLE_HIGH = 2300;
-        if (rpm < 30 && throttle != 0){
-            launch = true;
-        }
-        else {
-            launch = false;
         }
     }
     else if (test_mode){
-        launch = false;
-        if (adc_throttle > 2000){ 
+        if (adc_throttle > 2000){
             UCO = true;
         }
         else {
@@ -118,16 +99,7 @@ void on_adc_fifo(void) {
 
         
         if (race_mode){
-            if (launch) {
-                if (battery_current_ma < 40000 && phase_current_ma < 100000) {
-                    duty_cycle = LAUNCH_DUTY_CYCLE;
-                    writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
-                }
-                else {
-                    launch = false; // Battery overload 
-                }
-            }
-            else if (UCO) {
+            if (UCO) {
                 smart_cruise_func();
             }
             else {
@@ -136,30 +108,12 @@ void on_adc_fifo(void) {
         }
 
         if (drive_mode){
-            if (launch) {
-                    if (battery_current_ma < 40000 && phase_current_ma < 100000) {
-                        duty_cycle = LAUNCH_DUTY_CYCLE;
-                        writePWM(motorState, (uint)(duty_cycle / 256), do_synchronous);
-                    }
-                    else {
-                        launch = false; // Battery overload 
-                        throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
-                        throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
-                        user_current_target_ma = throttle * BATTERY_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
-                        current_target_ma = MIN(user_current_target_ma, battery_current_limit_ma);
-                        THROTTLE_HIGH = 2000;
-                        adjust_duty();
-                    }
-                }
-            else {
-                throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
-                throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
-                user_current_target_ma = throttle * BATTERY_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
-                current_target_ma = MIN(user_current_target_ma, battery_current_limit_ma);
-                THROTTLE_HIGH = 2000;
-                adjust_duty();
-            }
-
+            throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
+            throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
+            user_current_target_ma = throttle * BATTERY_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
+            current_target_ma = MIN(user_current_target_ma, battery_current_limit_ma);
+            THROTTLE_HIGH = 2000;
+            adjust_duty();
         }
 
         if (test_mode){;
@@ -322,7 +276,7 @@ void adjust_duty(){ //clamp current, increment duty, clamp duty, synchronous?, w
         }
 
     bool do_synchronous = ticks_since_init > 16000;    // Enable synchronous switching after some delay
-    current_target_ma = MIN(current_target_ma, battery_current_limit_ma); //Safety clamp again after launch and cruise adjustments
+    current_target_ma = MIN(current_target_ma, battery_current_limit_ma); //Safety clamp again after cruise adjustments
     if (phase_current_ma > PHASE_MAX_CURRENT_MA) {
         phase_max();
         return;
@@ -387,7 +341,7 @@ void smart_cruise_func(void) {
     // PID output is the battery current target directly in mA.
     // Positive output accelerates, zero output coasts.
     float output_ma = p_term + i_term + d_term;
-    current_target_ma = (int)MAX(0.0f, MIN((float)BATTERY_MAX_CURRENT_MA, output_ma));
+    current_target_ma = (int)MAX(0.0f, MIN((float)CRUISE_MAX_CURRENT_MA, output_ma));
 
     adjust_duty();
 }

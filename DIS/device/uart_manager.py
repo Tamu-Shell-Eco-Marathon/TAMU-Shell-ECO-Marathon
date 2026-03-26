@@ -1,7 +1,7 @@
 class UartManager:
     def __init__(self, uart_instance):
         self.uart = uart_instance
-        self.buffer = ""
+        self.buffer = bytearray()
 
         self.uart_blink = False
         self.new_data = False # Flag to indicate if new data was parsed
@@ -16,15 +16,16 @@ class UartManager:
         if self.uart.any():
             data = self.uart.read()
             if data:
-                # Convert bytes to printable characters
+                # Append printable characters and newlines into bytearray
                 for b in data:
                     if 32 <= b <= 126 or b == 10:
-                        self.buffer += chr(b)
+                        self.buffer.append(b)
 
                 # Process complete lines
-                while "\n" in self.buffer:
-                    line, self.buffer = self.buffer.split("\n", 1)
-                    line = line.strip()
+                while b'\n' in self.buffer:
+                    idx = self.buffer.index(b'\n')
+                    line = str(self.buffer[:idx], 'utf-8').strip()
+                    self.buffer = self.buffer[idx + 1:]
                     if not line:
                         continue
 
@@ -38,16 +39,25 @@ class UartManager:
             self.last_message = line # Store for read_message()
             if line.startswith("s,"):
                 parts = line.split(',')
-                if len(parts) >= 9:
+                if len(parts) >= 10:
                     vehicle.motor_ticks = int(parts[1])
-                    vehicle.eco = bool(int(parts[2]))
+                    vehicle.smart_cruise = bool(int(parts[2]))
                     vehicle.motor_mph = float(parts[3])
                     vehicle.rpm = int(vehicle.motor_mph / 0.04767) # Back-calculate RPM for physics consistency
                     vehicle.voltage = int(parts[4]) / 1000.0
                     vehicle.current = int(parts[5]) / 1000.0
                     vehicle.throttle_position = int(parts[6])
                     vehicle.throttle = int(parts[7])
+                    if vehicle.throttle > 100:
+                        vehicle.throttle = 100
                     vehicle.duty_cycle = int(parts[8])
+                    mode_char = parts[9].strip()
+                    if mode_char == 'r':
+                        vehicle.state = "RACE"
+                    elif mode_char == 't':
+                        vehicle.state = "TEST"
+                    elif mode_char == 'd':
+                        vehicle.state = "DRIVE"
         except Exception as e:
             print("Parse error:", e, "on line:", line)
 

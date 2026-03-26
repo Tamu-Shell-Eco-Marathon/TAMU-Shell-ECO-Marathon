@@ -8,6 +8,7 @@ class Logger:
         self.file = None
         self.is_logging = False
         self.filename = ""
+        self.next_log_num = 1
         
         # Define columns once to ensure header matches data
         self.columns = [
@@ -15,7 +16,11 @@ class Logger:
             "Volts", "Amps", "PowerInst", "Throttle", "Duty", "RPM"
         ]
         
+        self._flush_interval = 10 # Flush to disk every N rows
+        self._rows_since_flush = 0
+
         self._ensure_directory()
+        self._scan_next_log_num()
         self._prev_timer_running = False
 
     def _ensure_directory(self):
@@ -25,8 +30,8 @@ class Logger:
         except OSError:
             pass # Directory likely exists
 
-    def _get_next_filename(self):
-        """Scan /Logs to find the next incremental filename."""
+    def _scan_next_log_num(self):
+        """Scan /Logs to find the next incremental number."""
         max_num = 0
         try:
             files = os.listdir("/Logs")
@@ -43,13 +48,13 @@ class Logger:
         except OSError:
             pass # Directory might be empty or error reading it
             
-        return "/Logs/log_{}.csv".format(max_num + 1)
+        self.next_log_num = max_num + 1
 
     def start(self):
         """Open file and write header."""
         if self.is_logging: return
 
-        self.filename = self._get_next_filename()
+        self.filename = "/Logs/log_{}.csv".format(self.next_log_num)
         print(f"Starting Log: {self.filename}")
         
         try:
@@ -57,7 +62,8 @@ class Logger:
             # Write Header
             header = ",".join(self.columns) + "\n"
             self.file.write(header)
-            self.file.flush() # Ensure header is written
+            self.file.flush()
+            self._rows_since_flush = 0
             self.is_logging = True
             self.last_log_time = time.ticks_ms()
         except Exception as e:
@@ -75,6 +81,7 @@ class Logger:
 
         try:
             if self.file:
+                self.file.flush()
                 self.file.close()
                 self.file = None
                 if display:
@@ -83,9 +90,13 @@ class Logger:
             print(f"Log Stop Error: {e}")
         
         self.is_logging = False
+        self.next_log_num += 1
 
     def update(self, vehicle, display):
         """Main loop update. Handles state transitions and interval writing."""
+        
+        # Sync log number to vehicle for display
+        vehicle.log_file_number = self.next_log_num
         
         # --- State Machine for Start/Stop ---
         # Rising Edge of Timer: Start if Armed
@@ -97,6 +108,15 @@ class Logger:
         if not vehicle.timer_running and self._prev_timer_running:
             if self.is_logging:
                 self.stop(display)
+                if vehicle.logging_armed:
+                    now_ms = time.ticks_ms()
+                    vehicle._stored_elapsed_ticks = 0
+                    vehicle.distance_miles = 0
+                    vehicle.energy_consumed = 0.0
+                    vehicle.efficiency_total = 0.0
+                    vehicle.timer_state = 'reset'
+                    vehicle._timer_start_ticks = now_ms
+                    display.queue_alert("TIMER", "RESET", 2)
 
         self._prev_timer_running = vehicle.timer_running
 
@@ -129,7 +149,10 @@ class Logger:
             line = ",".join(row_data) + "\n"
             if self.file:
                 self.file.write(line)
-                self.file.flush() # Critical: Save to disk immediately
+                self._rows_since_flush += 1
+                if self._rows_since_flush >= self._flush_interval:
+                    self.file.flush()
+                    self._rows_since_flush = 0
             
         except Exception as e:
             print(f"Log Write Error: {e}")
