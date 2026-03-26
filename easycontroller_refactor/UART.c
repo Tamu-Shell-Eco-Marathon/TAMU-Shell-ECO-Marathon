@@ -13,10 +13,15 @@
 #define MSG_MAX 128
 
 char message_from_DIS[MSG_MAX];
-char message_to_DIS[64];
+char message_to_DIS[96];
 int msg_len = 0;
 bool msg_ready = false;
 float target_speed = 15;
+
+// Race timer state
+bool race_timer_running = false;
+absolute_time_t race_timer_start;
+float race_elapsed_seconds = 0.0f;
 
 void send_telemetry_uart() {
 
@@ -33,7 +38,12 @@ void send_telemetry_uart() {
     else if (drive_mode) mode = 'd';
     else mode = 'u'; // unknown
 
-    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d,%c\n",
+    // Update race elapsed time
+    if (race_timer_running) {
+        race_elapsed_seconds = absolute_time_diff_us(race_timer_start, get_absolute_time()) / 1000000.0f;
+    }
+
+    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d,%c,%.1f\n",
              signal,
              motor_ticks,
              UCO,
@@ -43,7 +53,8 @@ void send_telemetry_uart() {
              throttle_norm,
              throttle_mapped,
              duty_cycle_norm,
-             mode);
+             mode,
+             race_elapsed_seconds);
 
     uart_puts(UART_ID, message_to_DIS);
     //printf("Message to DIS: %s\n", message_to_DIS);
@@ -59,7 +70,7 @@ void read_telemetry(void) {
             message_from_DIS[msg_len] = '\0';  // terminate string
             msg_ready = true;                  // mark message ready
             msg_len = 0;                       // reset for next message
-            // printf("Message from DIS: %s\n", message_from_DIS);
+            printf("Message from DIS: %s\n", message_from_DIS);
             return;                            // stop after one full message
         }
 
@@ -141,7 +152,29 @@ void parse_telemetry(void) {
                 break;
         }
         break; 
-    //case 'temp'
+    case 'A': // rAcing - race timer management
+        if (index >= 2 && strcmp(message[1], "start") == 0) {
+            race_timer_running = true;
+            race_timer_start = get_absolute_time();
+            race_elapsed_seconds = 0.0f;
+            uart_puts(UART_ID, "A,start,ACK\n");
+        } else if (index >= 2 && strcmp(message[1], "stop") == 0) {
+            race_timer_running = false;
+            race_elapsed_seconds = 0.0f;
+            uart_puts(UART_ID, "A,stop,ACK\n");
+        } else if (index >= 3 && strcmp(message[1], "sync") == 0) {
+            float sync_seconds = atof(message[2]);
+            if (sync_seconds > 0.0f) {
+                race_timer_running = true;
+                uint64_t now_us = to_us_since_boot(get_absolute_time());
+                uint64_t start_us = now_us - (uint64_t)(sync_seconds * 1000000.0f);
+                race_timer_start = from_us_since_boot(start_us);
+                race_elapsed_seconds = sync_seconds;
+            }
+            uart_puts(UART_ID, "A,sync,ACK\n");
+        }
+        break;
+
     default:
         // unknown signifier
         break;

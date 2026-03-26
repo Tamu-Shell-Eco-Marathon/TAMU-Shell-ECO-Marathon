@@ -41,6 +41,8 @@ class Vehicle:
         self.target_mph = 0.0
         self.remaining_distance_miles = 0.0
         self.remaining_time_seconds = 0.0
+        self.mc_race_seconds = 0.0 # Race time from motor controller S message
+        self.race_started_ack = False # Set True when MC acknowledges A,start
 
         # Derived signals calculated with time
         self.energy_consumed = 0.0

@@ -58,6 +58,16 @@ class UartManager:
                         vehicle.state = "TEST"
                     elif mode_char == 'd':
                         vehicle.state = "DRIVE"
+                    # Parse race elapsed seconds from motor controller (field 11)
+                    if len(parts) >= 11:
+                        try:
+                            vehicle.mc_race_seconds = float(parts[10])
+                        except ValueError:
+                            pass
+            elif line.startswith("A,"):
+                # Race timer acknowledgement from motor controller
+                if "start" in line and "ACK" in line:
+                    vehicle.race_started_ack = True
         except Exception as e:
             print("Parse error:", e, "on line:", line)
 
