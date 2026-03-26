@@ -28,7 +28,7 @@ extern const int HALL_IDENTIFY_DUTY_CYCLE;
 extern int UART_SEND_INTERVAL_US;
 //Smart cruise parameters
 extern float cruise_error;
-extern int cruise_increment;
+extern float cruise_increment;
 extern float CRUISE_INCREMENT_MAX;
 extern float kp;
 extern float ki;

@@ -288,38 +288,48 @@ void adjust_duty(){ //clamp current, increment duty, clamp duty, synchronous?, w
 
 void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     //Requires global target_speed to be set prior to calling function
+    static float integral = 0.0f;
+    static absolute_time_t time_of_last_call = 0;
+
     current_target_ma = prev_current_target_ma; //Build off previous current
     prev_speed = speed;
     speed = (rpm * rpmtomph);
 
-    //time difference in us
-    float dt = absolute_time_diff_us(time_since_at_target_speed, get_absolute_time()); 
-    //Safety check
-    if (dt <= 0.0f) return;
+    absolute_time_t now = get_absolute_time();
+    float dt_s = absolute_time_diff_us(time_of_last_call, now) / 1e6f; // seconds between calls
+    time_of_last_call = now;
 
+    // Failsafe: reset state on first call or after >0.5s gap to prevent integral/derivative spike
+    if (dt_s > 0.5f || dt_s <= 0.0f) {
+        integral = 0.0f;
+        prev_speed = speed;
+        return;
+    }
 
-    //P term grows with error 
-    //I term grows with time from target speed 
+    //P term grows with error
+    //I term accumulates error over time
     //D term grows with rate of change of speed
     float error = target_speed - speed;
-    float p_term = error;
-    float i_term = error*dt; 
-    float d_term = (speed - prev_speed) / dt;
+    integral += error * dt_s;
+
+    float p_term = kp * error;
+    float i_term = ki * integral;
+    float d_term = kd * (speed - prev_speed) / dt_s;
 
     //Calculate cruise increment from PID terms
-    cruise_increment = kp*p_term + ki*i_term - kd*d_term;
+    cruise_increment = p_term + i_term - d_term;
 
-    //Clamp cruise increment to 500 mA changes
-    cruise_increment = MAX(-1*CRUISE_INCREMENT_MAX, MIN(CRUISE_INCREMENT_MAX, cruise_increment)); 
+    //Clamp cruise increment to CRUISE_INCREMENT_MAX mA changes
+    cruise_increment = MAX(-1*CRUISE_INCREMENT_MAX, MIN(CRUISE_INCREMENT_MAX, cruise_increment));
 
     //Calculate new target current and clamp to valid range
     float calculated_current = current_target_ma + cruise_increment;
     current_target_ma = (int)calculated_current;
     current_target_ma = MAX(0, MIN(CRUISE_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to cruise limit
 
-    //Reset timer if within target speed band
-    if (speed >= target_speed - cruise_error*target_speed*.1 && speed <= target_speed + cruise_error*target_speed){
-        time_since_at_target_speed = get_absolute_time(); //Reset timer if within target speed band
+    //Reset integral when within target speed band (cruise_error is a direct MPH band)
+    if (speed >= target_speed - cruise_error && speed <= target_speed + cruise_error){
+        integral = 0.0f;
     }
     //Finally
     adjust_duty();

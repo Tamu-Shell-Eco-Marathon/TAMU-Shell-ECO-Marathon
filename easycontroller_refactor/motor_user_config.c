@@ -28,7 +28,7 @@ int UART_SEND_INTERVAL_US = 250000; // 4 Hz
 
 //Smart cruise parameters
 float cruise_error = 1.0f;
-int cruise_increment = 1; //miliamps
+float cruise_increment = 1.0f; //miliamps
 float CRUISE_INCREMENT_MAX = 500;
 float kp=.001f;
 float ki=4.0f;
