@@ -315,7 +315,7 @@ void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     //Calculate new target current and clamp to valid range
     float calculated_current = current_target_ma + cruise_increment;
     current_target_ma = (int)calculated_current;
-    current_target_ma = MAX(0, MIN(BATTERY_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to valid range
+    current_target_ma = MAX(0, MIN(CRUISE_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to cruise limit
 
     //Reset timer if within target speed band
     if (speed >= target_speed - cruise_error*target_speed*.1 && speed <= target_speed + cruise_error*target_speed){

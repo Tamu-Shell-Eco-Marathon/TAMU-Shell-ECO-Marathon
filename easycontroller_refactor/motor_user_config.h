@@ -33,3 +33,4 @@ extern float CRUISE_INCREMENT_MAX;
 extern float kp;
 extern float ki;
 extern float kd;
+extern int CRUISE_MAX_CURRENT_MA;  // Max current smart cruise can request (mA)

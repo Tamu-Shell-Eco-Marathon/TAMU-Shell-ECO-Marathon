@@ -33,4 +33,5 @@ float CRUISE_INCREMENT_MAX = 500;
 float kp=.001f;
 float ki=4.0f;
 float kd=.4f;
+int CRUISE_MAX_CURRENT_MA = 8000; // 10 A — max current smart cruise can request (mA)
 
