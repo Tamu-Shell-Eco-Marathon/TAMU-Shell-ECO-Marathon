@@ -158,6 +158,10 @@ void parse_telemetry(void) {
             race_timer_start = get_absolute_time();
             race_elapsed_seconds = 0.0f;
             uart_puts(UART_ID, "A,start,ACK\n");
+        } else if (index >= 2 && strcmp(message[1], "stop") == 0) {
+            race_timer_running = false;
+            race_elapsed_seconds = 0.0f;
+            uart_puts(UART_ID, "A,stop,ACK\n");
         } else if (index >= 3 && strcmp(message[1], "sync") == 0) {
             float sync_seconds = atof(message[2]);
             if (sync_seconds > 0.0f) {

@@ -229,6 +229,9 @@ class ButtonManager:
                     vehicle.timer_running = False
                     vehicle.timer_state = 'reset'
                     vehicle._timer_start_ticks = now
+                    vehicle.mc_race_seconds = 0.0
+                    if vehicle.state == "RACE":
+                        uart_manager.send("A,stop")
                     if vehicle.logging_armed:
                         display.show_alert("LOG", "SAVED", 2)
                         display.queue_alert("TIMER", "RESET", 2)
