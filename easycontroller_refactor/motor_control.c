@@ -306,10 +306,15 @@ void smart_cruise_func(){ //Cruise control target speed calculted on DIS
         return;
     }
 
+    float adjusted_target = target_speed + target_speed_adjustment_factor;
+    if (show_metrics) {
+        printf("target_speed: %.2f, adjusted_target: %.2f\n", target_speed, adjusted_target);
+    }
+
     //P term grows with error
     //I term accumulates error over time
     //D term grows with rate of change of speed
-    float error = target_speed - speed;
+    float error = adjusted_target - speed;
     integral += error * dt_s;
 
     float p_term = kp * error;
@@ -328,7 +333,7 @@ void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     current_target_ma = MAX(0, MIN(CRUISE_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to cruise limit
 
     //Reset integral when within target speed band (cruise_error is a direct MPH band)
-    if (speed >= target_speed - cruise_error && speed <= target_speed + cruise_error){
+    if (speed >= adjusted_target - cruise_error && speed <= adjusted_target + cruise_error){
         integral = 0.0f;
     }
     //Finally

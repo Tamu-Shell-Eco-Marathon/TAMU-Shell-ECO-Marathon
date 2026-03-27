@@ -217,8 +217,9 @@ const Command cmd_table[] = {
     {"PHASE_MAX_CURRENT_MA",   CMD_INT,    (void*)&PHASE_MAX_CURRENT_MA},
     {"cruise_error",           CMD_INT,    (void*)&cruise_error},
     {"test_current_ma",        CMD_INT,    (void*)&test_current_ma},
-    {"CRUISE_MAX_CURRENT_MA",  CMD_INT,    (void*)&CRUISE_MAX_CURRENT_MA},
-    {"show_metrics",           CMD_TOGGLE, (void*)&show_metrics}
+    {"CRUISE_MAX_CURRENT_MA",           CMD_INT,    (void*)&CRUISE_MAX_CURRENT_MA},
+    {"target_speed_adjustment_factor", CMD_FLOAT,  (void*)&target_speed_adjustment_factor},
+    {"show_metrics",                   CMD_TOGGLE, (void*)&show_metrics}
 };
 
 const int NUM_CMDS = sizeof(cmd_table) / sizeof(cmd_table[0]);

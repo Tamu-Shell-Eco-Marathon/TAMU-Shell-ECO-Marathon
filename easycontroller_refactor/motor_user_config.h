@@ -34,3 +34,4 @@ extern float kp;
 extern float ki;
 extern float kd;
 extern int CRUISE_MAX_CURRENT_MA;  // Max current smart cruise can request (mA)
+extern float target_speed_adjustment_factor; // Additive offset to DIS target speed (mph), default 0
