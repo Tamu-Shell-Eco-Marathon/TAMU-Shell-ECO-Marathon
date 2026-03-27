@@ -16,7 +16,7 @@ char message_from_DIS[MSG_MAX];
 char message_to_DIS[96];
 int msg_len = 0;
 bool msg_ready = false;
-float target_speed = 15;
+volatile float target_speed = 15;
 
 // Race timer state
 bool race_timer_running = false;
@@ -118,10 +118,17 @@ void parse_telemetry(void) {
 
    switch (signifier) {
     case 'T': // target speed
-        target_speed = atof(message[1]);
+        if (index < 2) break;
+        {
+            float parsed_speed = atof(message[1]);
+            if (parsed_speed >= 8.0f && parsed_speed <= 25.0f) {
+                target_speed = parsed_speed;
+            }
+        }
         break;
 
     case 'M': // mode select
+        if (index < 2) break;
         mode = message[1][0];
 
         switch (mode) {
@@ -141,7 +148,9 @@ void parse_telemetry(void) {
                 drive_mode = false;
                 race_mode  = false;
                 test_mode  = true;
-                test_current_ma = 1000*atoi(message[2]); // set test current
+                if (index >= 3) {
+                    test_current_ma = 1000*atoi(message[2]); // set test current
+                }
                 break;
 
             default:
