@@ -73,10 +73,6 @@ class TargetSpeedIndicator:
         self._blink_state = True
         self._last_blink_ms = time.ticks_ms()
 
-        # Showroom animation state
-        self._showroom_step = 0
-        self._showroom_last_ms = 0
-
         # Start off
         self.off(force_write=True)
 
@@ -91,7 +87,7 @@ class TargetSpeedIndicator:
     def update(self, vehicle):
         current_speed = vehicle.motor_mph
         target_speed = vehicle.target_mph
-        race_mode = (vehicle.state == "RACE" or vehicle.state == "COMP")
+        race_mode = (vehicle.state == "RACE")
         smart_cruise = vehicle.smart_cruise
 
         # 1 Race mode OFF => all off (only write if changed)
@@ -181,37 +177,6 @@ class TargetSpeedIndicator:
             pixels[dot] = dot_color
 
         self._apply(pixels)
-
-    def showroom_update(self):
-        now = time.ticks_ms()
-        if time.ticks_diff(now, self._showroom_last_ms) >= 30:
-            self._showroom_step = (self._showroom_step + 1) % 42
-            self._showroom_last_ms = now
-
-        step = self._showroom_step
-        pixels = self._pixels
-        for i in range(self.num_leds):
-            idx = (step + i * 3) % 42
-            if idx < 14:
-                r = 255 - idx * 18
-                g = idx * 18
-                b = 0
-            elif idx < 28:
-                j = idx - 14
-                r = 0
-                g = 255 - j * 18
-                b = j * 18
-            else:
-                j = idx - 28
-                r = j * 18
-                g = 0
-                b = 255 - j * 18
-            pixels[i] = (r >> 2, g >> 2, b >> 2)
-        self._apply(pixels)
-
-    def showroom_off(self):
-        self._showroom_step = 0
-        self.off(force_write=True)
 
     def _apply(self, pixels, force_write=False):
         # Only write if something changed

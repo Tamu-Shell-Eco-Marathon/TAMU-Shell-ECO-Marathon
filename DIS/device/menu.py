@@ -3,8 +3,6 @@ try:
 except ImportError:
     TYPE_CHECKING = False
 
-import utime as time
-
 if TYPE_CHECKING:
     from typing import List, Tuple, Callable, Optional
     from display import DisplayManager
@@ -50,46 +48,19 @@ class ListScreen(Screen):
             callback(display, vehicle, uart)
 
     def draw(self, display: "DisplayManager", vehicle: "Vehicle"):
-        h = 12
-        max_visible = display.height // h  # How many items fit on screen
-
-        # Scroll window so selected item is always visible
-        if self.index < getattr(self, '_scroll_top', 0):
-            self._scroll_top = self.index
-        elif self.index >= getattr(self, '_scroll_top', 0) + max_visible:
-            self._scroll_top = self.index - max_visible + 1
-        scroll_top = getattr(self, '_scroll_top', 0)
-
         y = 0
-        for i in range(scroll_top, min(scroll_top + max_visible, len(self.options))):
-            label, _ = self.options[i]
+        h = 12
+        for i, (label, _) in enumerate(self.options):
             # Support dynamic labels (callables)
             if callable(label):
                 label = label(vehicle)
-
+            
             if i == self.index:
                 display.oled.fill_rect(0, y, display.width, h, 1)
                 display.oled.text(label, 2, y+2, 0)
             else:
                 display.oled.text(label, 2, y+2, 1)
             y += h
-
-class ShowroomScreen(Screen):
-    """Fullscreen 'TAMU SEM' text with 1-second inversion pulse."""
-    def on_enter(self):
-        self._next_invert = time.ticks_ms()
-
-    def handle_input(self, display, vehicle, uart, k0, k0_hold, k1, k1_hold):
-        if k0 or k0_hold or k1 or k1_hold:
-            display.showroom_active = False
-            self.manager.pop_screen()
-
-    def draw(self, display, vehicle):
-        now = time.ticks_ms()
-        if time.ticks_diff(now, self._next_invert) >= 0:
-            display.set_invert(1)
-            self._next_invert = time.ticks_add(now, 2000)
-        display.render_alert("TAMU", "SEM")
 
 class NumberInputScreen(Screen):
     """Screen for editing a number and sending it."""
@@ -160,13 +131,12 @@ class Menu:
         
         # Define Main Menu Options
         main_options = [
+            (lambda v: "LOGGING: " + ("ON" if v.logging_armed else "OFF"), self._toggle_logging),
             ("SET DRIVE MODE", lambda d, v, u: self.send_command(u, "M,d", "DRIVE", on_success=lambda: setattr(v, 'state', 'DRIVE'))),
             ("SET TEST MODE", lambda d, v, u: self.push_screen(NumberInputScreen(self))),
             ("SET RACE MODE", lambda d, v, u: self.send_command(u, "M,r", "RACE", on_success=lambda: setattr(v, 'state', 'RACE'))),
-            ("SET COMP MODE", lambda d, v, u: self.send_command(u, "M,c", "COMP", on_success=lambda: setattr(v, 'state', 'COMP'))),
-            ("SET MOTOR LIMIT", lambda d, v, u: None),
-            (lambda v: "LOGGING: " + ("ON" if v.logging_armed else "OFF"), self._toggle_logging),
-            ("SHOWROOM", lambda d, v, u: self._enter_showroom(d)),
+
+            ("SET MOTOR LIMIT", lambda d, v, u: None)
         ]
         self.push_screen(ListScreen(self, main_options))
 
@@ -180,10 +150,6 @@ class Menu:
 
     def _toggle_logging(self, display, vehicle, uart):
         vehicle.logging_armed = not vehicle.logging_armed
-
-    def _enter_showroom(self, display):
-        display.showroom_active = True
-        self.push_screen(ShowroomScreen(self))
 
     def send_command(self, uart: "UartManager", command: str, alert_text: str, on_success=None):
         uart.send(command)
