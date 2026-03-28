@@ -49,15 +49,7 @@ bool at_target_speed = false;
 bool race_mode = true;
 bool test_mode = false;
 bool drive_mode = false;
-bool comp_mode = false;
 absolute_time_t time_since_at_target_speed = 0;
-
-// Competition / race timer state
-bool race_timer_running = false;
-absolute_time_t race_timer_start = 0;
-volatile float race_elapsed_seconds = 0.0f;
-uint8_t comp_lap_count = 0;
-volatile float comp_energy_wh = 0.0f;
 
 
 
@@ -290,36 +282,4 @@ void process_serial_input() {
 
     printf(">>> Unknown command: %s\n", tokens[0]);
     printf(">>> Type 'help' for a list of commands.\n");
-}
-
-// ---- Competition Race Timer Functions ----
-
-void start_race_timer(void) {
-    reset_motor_ticks();
-    race_timer_running = true;
-    race_timer_start = get_absolute_time();
-    race_elapsed_seconds = 0.0f;
-    comp_energy_wh = 0.0f;
-    comp_lap_count = 0;
-}
-
-void stop_race_timer(void) {
-    // Capture final elapsed time before stopping
-    if (race_timer_running) {
-        race_elapsed_seconds = absolute_time_diff_us(race_timer_start, get_absolute_time()) / 1e6f;
-    }
-    race_timer_running = false;
-}
-
-void update_race_timer(void) {
-    if (race_timer_running) {
-        race_elapsed_seconds = absolute_time_diff_us(race_timer_start, get_absolute_time()) / 1e6f;
-    }
-}
-
-void update_comp_energy(float dt_seconds) {
-    if (race_timer_running && dt_seconds > 0.0f) {
-        float power_w = (voltage_mv / 1000.0f) * (battery_current_ma / 1000.0f);
-        comp_energy_wh += power_w * (dt_seconds / 3600.0f);
-    }
 }

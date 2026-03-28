@@ -108,9 +108,7 @@ class Logger:
         if not vehicle.timer_running and self._prev_timer_running:
             if self.is_logging:
                 self.stop(display)
-                # Only auto-reset counters in non-competition modes
-                # In COMP mode, the race manager handles lifecycle
-                if vehicle.logging_armed and vehicle.state != "COMP":
+                if vehicle.logging_armed:
                     now_ms = time.ticks_ms()
                     vehicle._stored_elapsed_ticks = 0
                     vehicle.distance_miles = 0
