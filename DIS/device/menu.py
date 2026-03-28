@@ -3,6 +3,8 @@ try:
 except ImportError:
     TYPE_CHECKING = False
 
+import utime as time
+
 if TYPE_CHECKING:
     from typing import List, Tuple, Callable, Optional
     from display import DisplayManager
@@ -73,23 +75,21 @@ class ListScreen(Screen):
             y += h
 
 class ShowroomScreen(Screen):
-    """Fullscreen A&M logo with LED animation."""
-    def __init__(self, manager):
-        super().__init__(manager)
-        self._logo_fb = None
+    """Fullscreen 'TAMU SEM' text with 1-second inversion pulse."""
+    def on_enter(self):
+        self._next_invert = time.ticks_ms()
 
     def handle_input(self, display, vehicle, uart, k0, k0_hold, k1, k1_hold):
         if k0 or k0_hold or k1 or k1_hold:
             display.showroom_active = False
-            self._logo_fb = None
             self.manager.pop_screen()
 
     def draw(self, display, vehicle):
-        import framebuf
-        from fonts.TAM_logo import LOGO, WIDTH, HEIGHT
-        if self._logo_fb is None:
-            self._logo_fb = framebuf.FrameBuffer(LOGO, WIDTH, HEIGHT, framebuf.MONO_HMSB)
-        display.oled.blit(self._logo_fb, 0, 0)
+        now = time.ticks_ms()
+        if time.ticks_diff(now, self._next_invert) >= 0:
+            display.set_invert(1)
+            self._next_invert = time.ticks_add(now, 2000)
+        display.render_alert("TAMU", "SEM")
 
 class NumberInputScreen(Screen):
     """Screen for editing a number and sending it."""
