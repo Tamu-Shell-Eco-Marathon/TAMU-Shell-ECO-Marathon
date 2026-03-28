@@ -33,6 +33,6 @@ float CRUISE_INCREMENT_MAX = 500;
 float kp=2.0f;
 float ki=0.0f;
 float kd=0.0f;
-int CRUISE_MAX_CURRENT_MA = 8000; // 10 A — max current smart cruise can request (mA)
+int CRUISE_MAX_CURRENT_MA = 10000; // 10 A — max current smart cruise can request (mA)
 float target_speed_adjustment_factor = 0.0f; // Additive offset to DIS target speed (mph)
 
