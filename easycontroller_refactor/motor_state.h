@@ -46,9 +46,17 @@ extern bool UCO;
 extern bool race_mode;
 extern bool test_mode;
 extern bool drive_mode;
+extern bool comp_mode;
 extern bool show_metrics;
 extern float target_speed;
 extern absolute_time_t time_since_at_target_speed;
+
+// Competition / race timer state
+extern bool race_timer_running;
+extern absolute_time_t race_timer_start;
+extern volatile float race_elapsed_seconds;
+extern uint8_t comp_lap_count;
+extern volatile float comp_energy_wh;
 
 // Serial helpers (used by debug modes)
 void check_serial_input(void);
@@ -62,3 +70,9 @@ void get_RPM();
 void check_serial();
 bool read_serial_input();
 void process_serial_input();
+
+// Competition race timer
+void start_race_timer(void);
+void stop_race_timer(void);
+void update_race_timer(void);
+void update_comp_energy(float dt_seconds);

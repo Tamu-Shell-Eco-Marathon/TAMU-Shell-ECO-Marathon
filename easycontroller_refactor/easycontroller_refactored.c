@@ -45,6 +45,9 @@ int main(void) {
 
 
         if (absolute_time_diff_us(last_UART_send, get_absolute_time()) >= UART_SEND_INTERVAL_US) {
+            float dt_sec = absolute_time_diff_us(last_UART_send, get_absolute_time()) / 1e6f;
+            update_race_timer();
+            update_comp_energy(dt_sec);
             send_telemetry_uart();
             read_telemetry();
             parse_telemetry();
@@ -52,9 +55,9 @@ int main(void) {
             last_UART_send = get_absolute_time();
 
             if (show_metrics){
-                printf("Mode: %s\n", drive_mode ? "Drive" : (race_mode ? "Race" : "Test"));
+                printf("Mode: %s\n", comp_mode ? "Comp" : (drive_mode ? "Drive" : (race_mode ? "Race" : "Test")));
                 printf("Battery Voltage: %.2f V\n", voltage_mv / 1000.0f);
-                if (race_mode){
+                if (race_mode || comp_mode){
                     printf("Speed: %f mph\n", rpm * rpmtomph);
                     printf("Target Speed: %f mph\n", target_speed);
                     printf("Target Current: %d mA\n", current_target_ma);

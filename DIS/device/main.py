@@ -7,6 +7,7 @@ from uart_manager import UartManager
 from vehicle_state import Vehicle
 from logger import Logger
 from LED import TargetSpeedIndicator
+from race_manager import RaceManager
 
 # --- Hardware Setup ---
 oled_driver = OLEDDriver()
@@ -14,9 +15,7 @@ display = DisplayManager(oled_driver)
 button_manager = ButtonManager()
 
 # --- Debug Flags ---
-#BEGIN DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
 DEBUG_TSI = False
-#END DEMOOOOOOOOOOOOOOOO ALFREDO EDIT
 DEBUG_PERFORMANCE = False
 DEBUG_VERBOSE = False
 perf_monitor = (
@@ -30,15 +29,46 @@ uart_manager = UartManager(hardware.uart)
 vehicle = Vehicle()
 logger = Logger(interval_ms=1000)
 tsi = TargetSpeedIndicator(data_pin=16, num_leds=14)
+race_manager = RaceManager()
 
 # ----------------- TIME VARIABLES -----------------
 last_sample_time = time.ticks_ms()
 elapsed_time = 0.0
 sample_dt = 0.0
 last_target_send_time = 0
+last_energy_sync_time = 0
+ENERGY_SYNC_INTERVAL_MS = 30000  # Sync energy to MC every 30 seconds
 # ---------------------------------------------------
 
-print("DIS Initialized\n")
+# =============== STARTUP RECOVERY ==================
+# Send A,query to check if a race is already in progress on the MC
+print("DIS Initialized - querying motor controller state\n")
+uart_manager.send_admin_query()
+
+# Wait briefly for response (non-blocking with timeout)
+_query_start = time.ticks_ms()
+_recovery_done = False
+while time.ticks_diff(time.ticks_ms(), _query_start) < 500:
+    uart_manager.update(vehicle)
+    resp = uart_manager.read_admin_response()
+    if resp is not None:
+        print("Admin response:", resp)
+        if resp['timer_running'] and resp['mode'] == 'c':
+            # Active competition race detected - recover state
+            race_manager.recover_from_admin(resp, vehicle, display, uart_manager)
+            # Auto-start logging
+            if vehicle.logging_armed:
+                logger.start()
+            print("RECOVERED: comp mode, elapsed={:.1f}s, ticks={}, laps={}".format(
+                resp['elapsed_sec'], resp['ticks'], resp['lap_count']))
+        _recovery_done = True
+        break
+    time.sleep_ms(10)
+
+if not _recovery_done:
+    print("No admin response - starting fresh")
+
+# =============== MAIN LOOP =========================
 
 while True:
     try:
@@ -52,18 +82,40 @@ while True:
         # -------- Input Handling ---------------
         uart_manager.update(vehicle)
 
-        if vehicle.state == "RACE":
+        # -------- Target Speed Sending (RACE and COMP modes) ---
+        if vehicle.state in ("RACE", "COMP"):
             if time.ticks_diff(current_time, last_target_send_time) >= 1000:
                 uart_manager.send("T,{:.1f}".format(vehicle.target_mph))
                 last_target_send_time = current_time
 
-
         # --------- Derived Values (runs even with stale data)
         vehicle.update_states(sample_dt, current_time)
 
-        tsi.update(vehicle)
+        # --------- TSI / Showroom LED ---------
+        if display.showroom_active:
+            tsi.showroom_update()
+        else:
+            tsi.update(vehicle)
 
-        button_manager.update(vehicle, display, uart_manager)
+        # --------- Button Handling -------------
+        button_manager.update(vehicle, display, uart_manager, race_manager)
+
+        # --------- Race Manager Activation & Update ---
+        if vehicle.state == "COMP" and not race_manager.active:
+            # Just entered comp mode (via menu) - activate race manager
+            race_manager.start(display)
+        elif vehicle.state != "COMP" and race_manager.active:
+            # Left comp mode - deactivate race manager
+            race_manager.stop()
+
+        if vehicle.state == "COMP" and race_manager.active:
+            race_manager.update(vehicle, display, uart_manager)
+
+        # --------- Energy Sync to MC (periodic) ---
+        if vehicle.state == "COMP" and vehicle.timer_running:
+            if time.ticks_diff(current_time, last_energy_sync_time) >= ENERGY_SYNC_INTERVAL_MS:
+                uart_manager.send_admin_energy(vehicle.energy_consumed)
+                last_energy_sync_time = current_time
 
         # --------- LOGGING --------------------------------
         logger.update(vehicle, display)
