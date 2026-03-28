@@ -48,13 +48,23 @@ class ListScreen(Screen):
             callback(display, vehicle, uart)
 
     def draw(self, display: "DisplayManager", vehicle: "Vehicle"):
-        y = 0
         h = 12
-        for i, (label, _) in enumerate(self.options):
+        max_visible = display.height // h  # How many items fit on screen
+
+        # Scroll window so selected item is always visible
+        if self.index < getattr(self, '_scroll_top', 0):
+            self._scroll_top = self.index
+        elif self.index >= getattr(self, '_scroll_top', 0) + max_visible:
+            self._scroll_top = self.index - max_visible + 1
+        scroll_top = getattr(self, '_scroll_top', 0)
+
+        y = 0
+        for i in range(scroll_top, min(scroll_top + max_visible, len(self.options))):
+            label, _ = self.options[i]
             # Support dynamic labels (callables)
             if callable(label):
                 label = label(vehicle)
-            
+
             if i == self.index:
                 display.oled.fill_rect(0, y, display.width, h, 1)
                 display.oled.text(label, 2, y+2, 0)
@@ -131,12 +141,12 @@ class Menu:
         
         # Define Main Menu Options
         main_options = [
-            (lambda v: "LOGGING: " + ("ON" if v.logging_armed else "OFF"), self._toggle_logging),
             ("SET DRIVE MODE", lambda d, v, u: self.send_command(u, "M,d", "DRIVE", on_success=lambda: setattr(v, 'state', 'DRIVE'))),
             ("SET TEST MODE", lambda d, v, u: self.push_screen(NumberInputScreen(self))),
             ("SET RACE MODE", lambda d, v, u: self.send_command(u, "M,r", "RACE", on_success=lambda: setattr(v, 'state', 'RACE'))),
             ("SET COMP MODE", lambda d, v, u: self.send_command(u, "M,c", "COMP", on_success=lambda: setattr(v, 'state', 'COMP'))),
-            ("SET MOTOR LIMIT", lambda d, v, u: None)
+            ("SET MOTOR LIMIT", lambda d, v, u: None),
+            (lambda v: "LOGGING: " + ("ON" if v.logging_armed else "OFF"), self._toggle_logging),
         ]
         self.push_screen(ListScreen(self, main_options))
 
