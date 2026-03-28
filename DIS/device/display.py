@@ -322,6 +322,9 @@ class DisplayManager:
         self._msg_until = 0  # ms timestamp; 0 means no active message
         self._alert_queue = []
 
+        #--------- Showroom State ----
+        self.showroom_active = False
+
         #--------- Inversion State (controlled by race manager) ----
         self._invert_until = 0  # ms timestamp; 0 means no inversion
 

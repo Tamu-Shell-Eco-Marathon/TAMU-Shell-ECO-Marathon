@@ -91,8 +91,11 @@ while True:
         # --------- Derived Values (runs even with stale data)
         vehicle.update_states(sample_dt, current_time)
 
-        # --------- TSI (active in RACE and COMP modes) ---------
-        tsi.update(vehicle)
+        # --------- TSI / Showroom LED ---------
+        if display.showroom_active:
+            tsi.showroom_update()
+        else:
+            tsi.update(vehicle)
 
         # --------- Button Handling -------------
         button_manager.update(vehicle, display, uart_manager, race_manager)

@@ -72,6 +72,25 @@ class ListScreen(Screen):
                 display.oled.text(label, 2, y+2, 1)
             y += h
 
+class ShowroomScreen(Screen):
+    """Fullscreen A&M logo with LED animation."""
+    def __init__(self, manager):
+        super().__init__(manager)
+        self._logo_fb = None
+
+    def handle_input(self, display, vehicle, uart, k0, k0_hold, k1, k1_hold):
+        if k0 or k0_hold or k1 or k1_hold:
+            display.showroom_active = False
+            self._logo_fb = None
+            self.manager.pop_screen()
+
+    def draw(self, display, vehicle):
+        import framebuf
+        from fonts.TAM_logo import LOGO, WIDTH, HEIGHT
+        if self._logo_fb is None:
+            self._logo_fb = framebuf.FrameBuffer(LOGO, WIDTH, HEIGHT, framebuf.MONO_HMSB)
+        display.oled.blit(self._logo_fb, 0, 0)
+
 class NumberInputScreen(Screen):
     """Screen for editing a number and sending it."""
     def __init__(self, manager: "Menu"):
@@ -147,6 +166,7 @@ class Menu:
             ("SET COMP MODE", lambda d, v, u: self.send_command(u, "M,c", "COMP", on_success=lambda: setattr(v, 'state', 'COMP'))),
             ("SET MOTOR LIMIT", lambda d, v, u: None),
             (lambda v: "LOGGING: " + ("ON" if v.logging_armed else "OFF"), self._toggle_logging),
+            ("SHOWROOM", lambda d, v, u: self._enter_showroom(d)),
         ]
         self.push_screen(ListScreen(self, main_options))
 
@@ -160,6 +180,10 @@ class Menu:
 
     def _toggle_logging(self, display, vehicle, uart):
         vehicle.logging_armed = not vehicle.logging_armed
+
+    def _enter_showroom(self, display):
+        display.showroom_active = True
+        self.push_screen(ShowroomScreen(self))
 
     def send_command(self, uart: "UartManager", command: str, alert_text: str, on_success=None):
         uart.send(command)
