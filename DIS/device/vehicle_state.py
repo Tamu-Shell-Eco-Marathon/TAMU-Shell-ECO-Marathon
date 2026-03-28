@@ -139,7 +139,8 @@ class Vehicle:
 
         # Update Timer & Distance
         if self.timer_running:
-            self.timer_elapsed_seconds = (self._stored_elapsed_ticks + time.ticks_diff(current_time_ms, self._timer_start_ticks)) / 1000
+            raw_elapsed = (self._stored_elapsed_ticks + time.ticks_diff(current_time_ms, self._timer_start_ticks)) / 1000
+            self.timer_elapsed_seconds = min(raw_elapsed, GOAL_TIME_SEC + 60)
 
             # In competition mode, use absolute ticks for distance (resilient to DIS restart)
             if self.state == "COMP" and self.comp_race_active:

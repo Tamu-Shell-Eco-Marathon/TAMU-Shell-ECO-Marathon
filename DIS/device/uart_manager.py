@@ -77,10 +77,14 @@ class UartManager:
         try:
             parts = line.split(',')
             if len(parts) >= 8:
+                elapsed = float(parts[4])
+                if elapsed < 0.0 or elapsed > 2200.0:
+                    print("Admin: elapsed_sec out of range:", elapsed)
+                    return
                 self.admin_response = {
                     'mode': parts[2].strip(),
                     'timer_running': int(parts[3]) == 1,
-                    'elapsed_sec': float(parts[4]),
+                    'elapsed_sec': elapsed,
                     'ticks': int(parts[5]),
                     'energy_wh': float(parts[6]),
                     'lap_count': int(parts[7]),

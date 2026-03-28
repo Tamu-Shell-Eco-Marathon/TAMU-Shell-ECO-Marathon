@@ -34,7 +34,7 @@ void send_telemetry_uart() {
     else if (drive_mode) mode = 'd';
     else mode = 'u'; // unknown
 
-    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d,%c\n",
+    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%.2f,%d,%d,%d,%d,%d,%c\n",
              signal,
              motor_ticks,
              UCO,
