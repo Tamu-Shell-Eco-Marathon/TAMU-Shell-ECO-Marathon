@@ -28,8 +28,10 @@ extern const int HALL_IDENTIFY_DUTY_CYCLE;
 extern int UART_SEND_INTERVAL_US;
 //Smart cruise parameters
 extern float cruise_error;
-extern int cruise_increment;
+extern float cruise_increment;
 extern float CRUISE_INCREMENT_MAX;
 extern float kp;
 extern float ki;
 extern float kd;
+extern int CRUISE_MAX_CURRENT_MA;  // Max current smart cruise can request (mA)
+extern float target_speed_adjustment_factor; // Additive offset to DIS target speed (mph), default 0

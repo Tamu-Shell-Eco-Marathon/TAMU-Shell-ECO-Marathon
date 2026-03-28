@@ -4,6 +4,7 @@ import time
 import framebuf
 import hardware
 from menu import Menu
+from vehicle_state import COMP_EXTRA_LONG_PRESS_MS
 
 class OLEDDriver(framebuf.FrameBuffer):
     def __init__(self):
@@ -114,19 +115,22 @@ class ButtonManager:
     def __init__(self):
         self.key0 = hardware.key0
         self.key1 = hardware.key1
-        
+
         now = time.ticks_ms()
         self._debounce_ms = 150
         self._longpress_ms = 2000
-        
+        self._extra_longpress_ms = COMP_EXTRA_LONG_PRESS_MS
+
         self._last_key0 = self.key0.value()
         self._last_key1 = self.key1.value()
         self._last_time_k0 = now
         self._last_time_k1 = now
         self._k1_press_start = None
         self._k1_reset_fired = False
+        self._k1_extra_fired = False
         self._k0_press_start = None
         self._k0_reset_fired = False
+        self._k0_extra_fired = False
 
     def check_events(self):
         now = time.ticks_ms()
@@ -136,15 +140,18 @@ class ButtonManager:
         k0_press = False
         k0_long_press = False
         k0_long_release = False
+        k0_extra_long = False
         k1_press = False
         k1_long_press = False
         k1_long_release = False
+        k1_extra_long = False
 
         # KEY0 press start
         if self._last_key0 == 1 and k0 == 0:
             if time.ticks_diff(now, self._last_time_k0) > self._debounce_ms:
                 self._k0_press_start = now
                 self._k0_reset_fired = False
+                self._k0_extra_fired = False
 
         # KEY0 long press detection
         if self._k0_press_start is not None and k0 == 0 and not self._k0_reset_fired:
@@ -153,14 +160,22 @@ class ButtonManager:
                 k0_long_press = True
                 self._k0_reset_fired = True
 
+        # KEY0 extra-long press detection (5s)
+        if self._k0_press_start is not None and k0 == 0 and self._k0_reset_fired and not self._k0_extra_fired:
+            press_ms = time.ticks_diff(now, self._k0_press_start)
+            if press_ms >= self._extra_longpress_ms:
+                k0_extra_long = True
+                self._k0_extra_fired = True
+
         # KEY0 release
         if self._last_key0 == 0 and k0 == 1 and self._k0_press_start is not None:
             press_ms = time.ticks_diff(now, self._k0_press_start)
             if not self._k0_reset_fired and press_ms < self._longpress_ms:
                 k0_press = True
-            if self._k0_reset_fired:
+            if self._k0_reset_fired and not self._k0_extra_fired:
                 k0_long_release = True
-                self._k0_reset_fired = False
+            self._k0_reset_fired = False
+            self._k0_extra_fired = False
             self._k0_press_start = None
             self._last_time_k0 = now
 
@@ -169,6 +184,7 @@ class ButtonManager:
             if time.ticks_diff(now, self._last_time_k1) > self._debounce_ms:
                 self._k1_press_start = now
                 self._k1_reset_fired = False
+                self._k1_extra_fired = False
 
         # KEY1 long press detection
         if self._k1_press_start is not None and k1 == 0 and not self._k1_reset_fired:
@@ -177,28 +193,46 @@ class ButtonManager:
                 k1_long_press = True
                 self._k1_reset_fired = True
 
+        # KEY1 extra-long press detection (5s)
+        if self._k1_press_start is not None and k1 == 0 and self._k1_reset_fired and not self._k1_extra_fired:
+            press_ms = time.ticks_diff(now, self._k1_press_start)
+            if press_ms >= self._extra_longpress_ms:
+                k1_extra_long = True
+                self._k1_extra_fired = True
+
         # KEY1 release
         if self._last_key1 == 0 and k1 == 1 and self._k1_press_start is not None:
             press_ms = time.ticks_diff(now, self._k1_press_start)
             if not self._k1_reset_fired and press_ms < self._longpress_ms:
                 k1_press = True
-            if self._k1_reset_fired:
+            if self._k1_reset_fired and not self._k1_extra_fired:
                 k1_long_release = True
-                self._k1_reset_fired = False
+            self._k1_reset_fired = False
+            self._k1_extra_fired = False
             self._k1_press_start = None
             self._last_time_k1 = now
 
         self._last_key0 = k0
         self._last_key1 = k1
 
-        return k0_press, k0_long_press, k0_long_release, k1_press, k1_long_press, k1_long_release
+        return (k0_press, k0_long_press, k0_long_release, k0_extra_long,
+                k1_press, k1_long_press, k1_long_release, k1_extra_long)
 
-    def update(self, vehicle, display, uart_manager):
+    def update(self, vehicle, display, uart_manager, race_manager=None):
         """
         Polls buttons and executes actions on the vehicle or display.
         """
-        k0_click, k0_hold, k0_hold_release, k1_click, k1_hold, k1_hold_release = self.check_events()
+        (k0_click, k0_hold, k0_hold_release, k0_extra,
+         k1_click, k1_hold, k1_hold_release, k1_extra) = self.check_events()
         now = time.ticks_ms()
+
+        # --- COMPETITION MODE INPUTS (K0 and K1 do the same thing) ---
+        if vehicle.state == "COMP" and race_manager is not None:
+            any_click = k0_click or k1_click
+            any_hold = k0_hold or k1_hold
+            any_extra = k0_extra or k1_extra
+            race_manager.handle_button(any_click, any_hold, any_extra, vehicle, display, uart_manager)
+            return
 
         # --- MENU MODE INPUTS ---
         if display.display_mode == "MENU":
@@ -229,9 +263,6 @@ class ButtonManager:
                     vehicle.timer_running = False
                     vehicle.timer_state = 'reset'
                     vehicle._timer_start_ticks = now
-                    vehicle.mc_race_seconds = 0.0
-                    if vehicle.state == "RACE":
-                        uart_manager.send("A,stop")
                     if vehicle.logging_armed:
                         display.show_alert("LOG", "SAVED", 2)
                         display.queue_alert("TIMER", "RESET", 2)
@@ -241,9 +272,6 @@ class ButtonManager:
                     vehicle._timer_start_ticks = now
                     vehicle.timer_running = True
                     vehicle.timer_state = 'running'
-                    # In RACE mode, notify motor controller to start its race timer
-                    if vehicle.state == "RACE":
-                        uart_manager.send("A,start")
 
 class DisplayManager:
     def __init__(self, oled_driver: OLEDDriver):
@@ -294,6 +322,12 @@ class DisplayManager:
         self._msg_until = 0  # ms timestamp; 0 means no active message
         self._alert_queue = []
 
+        #--------- Showroom State ----
+        self.showroom_active = False
+
+        #--------- Inversion State (controlled by race manager) ----
+        self._invert_until = 0  # ms timestamp; 0 means no inversion
+
     def change_screen(self, delta):
         self.current_screen = (self.current_screen + delta) % self.num_screens
         print(f"screen: {self.current_screen}")
@@ -336,8 +370,13 @@ class DisplayManager:
                     self.render_gauge(vehicle.motor_mph, precision=1)
                     label = "MPH"
                 elif self.current_screen == 1:
-                    self.render_time(vehicle.timer_elapsed_seconds)
-                    label = "ELAPSED"
+                    # In competition mode, show remaining time instead of elapsed
+                    if vehicle.state == "COMP":
+                        self.render_time(vehicle.remaining_time_seconds)
+                        label = "REM"
+                    else:
+                        self.render_time(vehicle.timer_elapsed_seconds)
+                        label = "ELAPSED"
                 elif self.current_screen == 2:
                     self.render_gauge(vehicle.current)
                     label = "AMPS"
@@ -377,8 +416,9 @@ class DisplayManager:
                 self.render_status_bar(uart_manager.uart_blink, vehicle.timer_state, vehicle.logging_armed, label, vehicle.log_file_number)
                 self.oled.text(vehicle.state[:1], 0, 0, 1) ## DEBUG - show vehicle state in upper right corner
 
-        # 5. Present
-        invert = False
+        # 5. Present (invert if race manager requested it)
+        now_present = time.ticks_ms()
+        invert = time.ticks_diff(self._invert_until, now_present) > 0
         self.oled.show(invert=invert)
 
     def render_gauge(self, value, precision=1, suppress_leading_zero=False):
@@ -524,6 +564,10 @@ class DisplayManager:
         self._msg_top = None
         self._msg_bottom = None
         self._msg_until = 0
+
+    def set_invert(self, seconds):
+        """Invert the display for a given number of seconds (used by race manager)."""
+        self._invert_until = time.ticks_add(time.ticks_ms(), int(seconds * 1000))
 
     def center_text_x(self, text):
         return int((self.width - (len(text) * 8)) / 2)

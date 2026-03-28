@@ -58,7 +58,7 @@ void on_adc_fifo(void) {
     //-------------------------------Motor drive operation logic tree-----------------------------------------------
     //race_mode = true; //Temporary default mode for testing
     UCO = false; //User Configured Operation currently used for smart cruise
-    if (race_mode){
+    if (race_mode || comp_mode){
         if (adc_throttle > 2000){
             UCO = true;
         }
@@ -98,7 +98,7 @@ void on_adc_fifo(void) {
         bool do_synchronous = ticks_since_init > 16000;    // Enable synchronous switching after some delay
 
         
-        if (race_mode){
+        if (race_mode || comp_mode){
             if (UCO) {
                 smart_cruise_func();
             }
@@ -288,38 +288,53 @@ void adjust_duty(){ //clamp current, increment duty, clamp duty, synchronous?, w
 
 void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     //Requires global target_speed to be set prior to calling function
+    static float integral = 0.0f;
+    static absolute_time_t time_of_last_call = 0;
+
     current_target_ma = prev_current_target_ma; //Build off previous current
     prev_speed = speed;
     speed = (rpm * rpmtomph);
 
-    //time difference in us
-    float dt = absolute_time_diff_us(time_since_at_target_speed, get_absolute_time()); 
-    //Safety check
-    if (dt <= 0.0f) return;
+    absolute_time_t now = get_absolute_time();
+    float dt_s = absolute_time_diff_us(time_of_last_call, now) / 1e6f; // seconds between calls
+    time_of_last_call = now;
 
+    // Failsafe: reset state on first call or after >0.5s gap to prevent integral/derivative spike
+    if (dt_s > 0.5f || dt_s <= 0.0f) {
+        integral = 0.0f;
+        prev_speed = speed;
+        return;
+    }
 
-    //P term grows with error 
-    //I term grows with time from target speed 
+    float adjusted_target = target_speed + target_speed_adjustment_factor;
+    if (show_metrics) {
+        printf("target_speed: %.2f, adjusted_target: %.2f\n", target_speed, adjusted_target);
+    }
+
+    //P term grows with error
+    //I term accumulates error over time
     //D term grows with rate of change of speed
-    float error = target_speed - speed;
-    float p_term = error;
-    float i_term = error*dt; 
-    float d_term = (speed - prev_speed) / dt;
+    float error = adjusted_target - speed;
+    integral += error * dt_s;
+
+    float p_term = kp * error;
+    float i_term = ki * integral;
+    float d_term = kd * (speed - prev_speed) / dt_s;
 
     //Calculate cruise increment from PID terms
-    cruise_increment = kp*p_term + ki*i_term - kd*d_term;
+    cruise_increment = p_term + i_term - d_term;
 
-    //Clamp cruise increment to 500 mA changes
-    cruise_increment = MAX(-1*CRUISE_INCREMENT_MAX, MIN(CRUISE_INCREMENT_MAX, cruise_increment)); 
+    //Clamp cruise increment to CRUISE_INCREMENT_MAX mA changes
+    cruise_increment = MAX(-1*CRUISE_INCREMENT_MAX, MIN(CRUISE_INCREMENT_MAX, cruise_increment));
 
     //Calculate new target current and clamp to valid range
     float calculated_current = current_target_ma + cruise_increment;
     current_target_ma = (int)calculated_current;
-    current_target_ma = MAX(0, MIN(BATTERY_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to valid range
+    current_target_ma = MAX(0, MIN(CRUISE_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to cruise limit
 
-    //Reset timer if within target speed band
-    if (speed >= target_speed - cruise_error*target_speed*.1 && speed <= target_speed + cruise_error*target_speed){
-        time_since_at_target_speed = get_absolute_time(); //Reset timer if within target speed band
+    //Reset integral when within target speed band (cruise_error is a direct MPH band)
+    if (speed >= adjusted_target - cruise_error && speed <= adjusted_target + cruise_error){
+        integral = 0.0f;
     }
     //Finally
     adjust_duty();
