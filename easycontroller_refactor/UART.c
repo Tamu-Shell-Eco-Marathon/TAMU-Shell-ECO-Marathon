@@ -18,11 +18,6 @@ int msg_len = 0;
 bool msg_ready = false;
 float target_speed = 15;
 
-// Race timer state
-bool race_timer_running = false;
-absolute_time_t race_timer_start;
-float race_elapsed_seconds = 0.0f;
-
 void send_telemetry_uart() {
 
     int duty_cycle_norm = duty_cycle * 100 / DUTY_CYCLE_MAX;
@@ -33,17 +28,13 @@ void send_telemetry_uart() {
     int throttle_mapped = (throttle_norm*100)/90;
     if (throttle_mapped > 100) throttle_mapped = 100; //indicate UCO activated
     char mode;
-    if (race_mode) mode = 'r';
+    if (comp_mode) mode = 'c';
+    else if (race_mode) mode = 'r';
     else if (test_mode) mode = 't';
     else if (drive_mode) mode = 'd';
     else mode = 'u'; // unknown
 
-    // Update race elapsed time
-    if (race_timer_running) {
-        race_elapsed_seconds = absolute_time_diff_us(race_timer_start, get_absolute_time()) / 1000000.0f;
-    }
-
-    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d,%c,%.1f\n",
+    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d,%c\n",
              signal,
              motor_ticks,
              UCO,
@@ -53,11 +44,9 @@ void send_telemetry_uart() {
              throttle_norm,
              throttle_mapped,
              duty_cycle_norm,
-             mode,
-             race_elapsed_seconds);
+             mode);
 
     uart_puts(UART_ID, message_to_DIS);
-    //printf("Message to DIS: %s\n", message_to_DIS);
 }
 
 void read_telemetry(void) {
@@ -70,7 +59,7 @@ void read_telemetry(void) {
             message_from_DIS[msg_len] = '\0';  // terminate string
             msg_ready = true;                  // mark message ready
             msg_len = 0;                       // reset for next message
-            printf("Message from DIS: %s\n", message_from_DIS);
+            // printf("Message from DIS: %s\n", message_from_DIS);
             return;                            // stop after one full message
         }
 
@@ -85,15 +74,42 @@ void read_telemetry(void) {
 
 /* want to use message signifier for differently formated messages */
 
-void send_acknowledgement() {            
+void send_acknowledgement() {
     char ack_msg[MSG_MAX + 5];
     snprintf(ack_msg, sizeof(ack_msg), "%s,ACK\n", message_from_DIS);
     uart_puts(UART_ID, ack_msg);
 }
 
+void send_admin_state(void) {
+    // Respond to A,query with full competition state
+    char mode_char;
+    if (comp_mode) mode_char = 'c';
+    else if (race_mode) mode_char = 'r';
+    else if (test_mode) mode_char = 't';
+    else if (drive_mode) mode_char = 'd';
+    else mode_char = 'u';
+
+    // Update elapsed time before sending
+    update_race_timer();
+
+    char buf[96];
+    snprintf(buf, sizeof(buf), "A,state,%c,%d,%.1f,%u,%.2f,%d\n",
+             mode_char,
+             race_timer_running ? 1 : 0,
+             race_elapsed_seconds,
+             motor_ticks,
+             comp_energy_wh,
+             comp_lap_count);
+    uart_puts(UART_ID, buf);
+}
+
 void parse_telemetry(void) {
     if (!msg_ready) return;
-    
+
+    // Save a copy before tokenizing (strtok_r modifies the string)
+    char msg_copy[MSG_MAX];
+    strncpy(msg_copy, message_from_DIS, MSG_MAX);
+    msg_copy[MSG_MAX - 1] = '\0';
 
     char *saveptr = NULL;
     char *tok = strtok_r(message_from_DIS, ",", &saveptr);
@@ -102,7 +118,6 @@ void parse_telemetry(void) {
     int index = 0;
     char *message[10];
     char mode;
-    send_acknowledgement();
 
     while (tok != NULL && index < max_index) {
         message[index++] = tok;
@@ -114,34 +129,60 @@ void parse_telemetry(void) {
         return;
     }
 
-    char signifier = message[0][0];  
+    char signifier = message[0][0];
+
+    // Send ACK for M and T commands (not A - A has its own responses)
+    if (signifier == 'M' || signifier == 'T') {
+        // Restore message_from_DIS for ACK (strtok_r destroyed it)
+        strncpy(message_from_DIS, msg_copy, MSG_MAX);
+        send_acknowledgement();
+    }
 
    switch (signifier) {
     case 'T': // target speed
-        target_speed = atof(message[1]);
+        if (index < 2) break;
+        {
+            float parsed_speed = atof(message[1]);
+            if (parsed_speed >= 8.0f && parsed_speed <= 25.0f) {
+                target_speed = parsed_speed;
+            }
+        }
         break;
 
     case 'M': // mode select
+        if (index < 2) break;
         mode = message[1][0];
 
         switch (mode) {
+            case 'c':
+                drive_mode = false;
+                race_mode  = false;
+                test_mode  = false;
+                comp_mode  = true;
+                break;
+
             case 'r':
                 drive_mode = false;
                 race_mode  = true;
                 test_mode  = false;
+                comp_mode  = false;
                 break;
 
             case 'd':
                 drive_mode = true;
                 race_mode  = false;
                 test_mode  = false;
+                comp_mode  = false;
                 break;
 
             case 't':
                 drive_mode = false;
                 race_mode  = false;
                 test_mode  = true;
-                test_current_ma = 1000*atoi(message[2]); // set test current
+                comp_mode  = false;
+                if (index >= 3) {
+                    test_current_ma = 1000*atoi(message[2]); // set test current
+                }
                 break;
 
             default:
@@ -149,29 +190,47 @@ void parse_telemetry(void) {
                 drive_mode = true;
                 race_mode  = false;
                 test_mode  = false;
+                comp_mode  = false;
                 break;
         }
-        break; 
-    case 'A': // rAcing - race timer management
-        if (index >= 2 && strcmp(message[1], "start") == 0) {
-            race_timer_running = true;
-            race_timer_start = get_absolute_time();
-            race_elapsed_seconds = 0.0f;
+        break;
+
+    case 'A': // Administrative - competition state sync
+        if (index < 2) break;
+
+        if (strcmp(message[1], "query") == 0) {
+            // DIS is asking for full state (e.g., after power loss recovery)
+            send_admin_state();
+        }
+        else if (strcmp(message[1], "start") == 0) {
+            // Start the competition race timer; reset ticks to 0
+            start_race_timer();
             uart_puts(UART_ID, "A,start,ACK\n");
-        } else if (index >= 2 && strcmp(message[1], "stop") == 0) {
-            race_timer_running = false;
-            race_elapsed_seconds = 0.0f;
-            uart_puts(UART_ID, "A,stop,ACK\n");
-        } else if (index >= 3 && strcmp(message[1], "sync") == 0) {
-            float sync_seconds = atof(message[2]);
-            if (sync_seconds > 0.0f) {
-                race_timer_running = true;
-                uint64_t now_us = to_us_since_boot(get_absolute_time());
-                uint64_t start_us = now_us - (uint64_t)(sync_seconds * 1000000.0f);
-                race_timer_start = from_us_since_boot(start_us);
-                race_elapsed_seconds = sync_seconds;
+        }
+        else if (strcmp(message[1], "lap") == 0) {
+            // Record a lap crossing
+            if (index >= 3) {
+                int lap = atoi(message[2]);
+                if (lap >= 1 && lap <= 4) {
+                    comp_lap_count = (uint8_t)lap;
+                }
             }
-            uart_puts(UART_ID, "A,sync,ACK\n");
+            uart_puts(UART_ID, "A,lap,ACK\n");
+        }
+        else if (strcmp(message[1], "energy") == 0) {
+            // DIS syncing its more accurate energy value to MC
+            if (index >= 3) {
+                float synced_energy = atof(message[2]);
+                if (synced_energy >= 0.0f) {
+                    comp_energy_wh = synced_energy;
+                }
+            }
+            uart_puts(UART_ID, "A,energy,ACK\n");
+        }
+        else if (strcmp(message[1], "finish") == 0) {
+            // Race finished
+            stop_race_timer();
+            uart_puts(UART_ID, "A,finish,ACK\n");
         }
         break;
 

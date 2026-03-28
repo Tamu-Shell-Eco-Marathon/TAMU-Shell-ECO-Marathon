@@ -58,7 +58,7 @@ void on_adc_fifo(void) {
     //-------------------------------Motor drive operation logic tree-----------------------------------------------
     //race_mode = true; //Temporary default mode for testing
     UCO = false; //User Configured Operation currently used for smart cruise
-    if (race_mode){
+    if (race_mode || comp_mode){
         if (adc_throttle > 2000){
             UCO = true;
         }
@@ -98,7 +98,7 @@ void on_adc_fifo(void) {
         bool do_synchronous = ticks_since_init > 16000;    // Enable synchronous switching after some delay
 
         
-        if (race_mode){
+        if (race_mode || comp_mode){
             if (UCO) {
                 smart_cruise_func();
             }

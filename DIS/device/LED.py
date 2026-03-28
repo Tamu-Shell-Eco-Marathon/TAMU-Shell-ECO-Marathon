@@ -87,7 +87,7 @@ class TargetSpeedIndicator:
     def update(self, vehicle):
         current_speed = vehicle.motor_mph
         target_speed = vehicle.target_mph
-        race_mode = (vehicle.state == "RACE")
+        race_mode = (vehicle.state == "RACE" or vehicle.state == "COMP")
         smart_cruise = vehicle.smart_cruise
 
         # 1 Race mode OFF => all off (only write if changed)

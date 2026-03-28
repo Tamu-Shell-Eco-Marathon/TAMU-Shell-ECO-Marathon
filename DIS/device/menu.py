@@ -135,7 +135,7 @@ class Menu:
             ("SET DRIVE MODE", lambda d, v, u: self.send_command(u, "M,d", "DRIVE", on_success=lambda: setattr(v, 'state', 'DRIVE'))),
             ("SET TEST MODE", lambda d, v, u: self.push_screen(NumberInputScreen(self))),
             ("SET RACE MODE", lambda d, v, u: self.send_command(u, "M,r", "RACE", on_success=lambda: setattr(v, 'state', 'RACE'))),
-
+            ("SET COMP MODE", lambda d, v, u: self.send_command(u, "M,c", "COMP", on_success=lambda: setattr(v, 'state', 'COMP'))),
             ("SET MOTOR LIMIT", lambda d, v, u: None)
         ]
         self.push_screen(ListScreen(self, main_options))
