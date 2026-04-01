@@ -34,3 +34,5 @@ extern float CRUISE_INCREMENT_MAX;
 extern float kp;
 extern float ki;
 extern float kd;
+extern float MAX_SMARTCRUISE_CURRENT_MA;
+extern float cruise_offset;

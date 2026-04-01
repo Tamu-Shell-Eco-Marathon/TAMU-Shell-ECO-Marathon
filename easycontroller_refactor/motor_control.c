@@ -300,24 +300,25 @@ void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     //P term grows with error 
     //I term grows with time from target speed 
     //D term grows with rate of change of speed
-    float error = target_speed - speed;
+    float effective_target = target_speed + cruise_offset;
+    float error = effective_target - speed;
     float p_term = error;
-    float i_term = error*dt; 
+    float i_term = error*dt;
     float d_term = (speed - prev_speed) / dt;
 
     //Calculate cruise increment from PID terms
     cruise_increment = kp*p_term + ki*i_term - kd*d_term;
 
     //Clamp cruise increment to 500 mA changes
-    cruise_increment = MAX(-1*CRUISE_INCREMENT_MAX, MIN(CRUISE_INCREMENT_MAX, cruise_increment)); 
+    cruise_increment = MAX(-1*CRUISE_INCREMENT_MAX, MIN(CRUISE_INCREMENT_MAX, cruise_increment));
 
     //Calculate new target current and clamp to valid range
     float calculated_current = current_target_ma + cruise_increment;
     current_target_ma = (int)calculated_current;
-    current_target_ma = MAX(0, MIN(BATTERY_MAX_CURRENT_MA, current_target_ma)); //Clamp target current to valid range
+    current_target_ma = MAX(0, MIN((int)MAX_SMARTCRUISE_CURRENT_MA, current_target_ma)); //Clamp target current to smart cruise limit
 
     //Reset timer if within target speed band
-    if (speed >= target_speed - cruise_error*target_speed*.1 && speed <= target_speed + cruise_error*target_speed){
+    if (speed >= effective_target - cruise_error*effective_target*.1 && speed <= effective_target + cruise_error*effective_target){
         time_since_at_target_speed = get_absolute_time(); //Reset timer if within target speed band
     }
     //Finally

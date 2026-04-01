@@ -27,10 +27,12 @@ const int HALL_IDENTIFY_DUTY_CYCLE = 25;
 int UART_SEND_INTERVAL_US = 250000; // 4 Hz
 
 //Smart cruise parameters
-float cruise_error = 0.5f;
-int cruise_increment = 1; //miliamps
+float cruise_error = 0.10f; //scalar for target speed band around effective target speed (e.g. 0.1 = +/- 10%)
+int cruise_increment = 0; //miliamps added or subtracted when adjusting current target for smart cruise
 float CRUISE_INCREMENT_MAX = 500;
 float kp=64.0f;
 float ki=0.0f;
 float kd=0.0f;
+float MAX_SMARTCRUISE_CURRENT_MA = 10000.0f; // mA ceiling for smart cruise current requests
+float cruise_offset = 0.0f;                  // mph offset added to UART target speed
 

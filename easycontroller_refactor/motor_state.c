@@ -225,9 +225,11 @@ const Command cmd_table[] = {
     {"kd",                     CMD_FLOAT,  (void*)&kd},
     {"BATTERY_MAX_CURRENT_MA", CMD_INT,    (void*)&BATTERY_MAX_CURRENT_MA},
     {"PHASE_MAX_CURRENT_MA",   CMD_INT,    (void*)&PHASE_MAX_CURRENT_MA},
-    {"cruise_error",           CMD_INT,    (void*)&cruise_error},
-    {"test_current_ma",        CMD_INT,    (void*)&test_current_ma},
-    {"show_metrics",           CMD_TOGGLE, (void*)&show_metrics}
+    {"cruise_error",              CMD_INT,    (void*)&cruise_error},
+    {"test_current_ma",           CMD_INT,    (void*)&test_current_ma},
+    {"show_metrics",              CMD_TOGGLE, (void*)&show_metrics},
+    {"MAX_SMARTCRUISE_CURRENT_MA",CMD_FLOAT,  (void*)&MAX_SMARTCRUISE_CURRENT_MA},
+    {"cruise_offset",             CMD_FLOAT,  (void*)&cruise_offset}
 };
 
 const int NUM_CMDS = sizeof(cmd_table) / sizeof(cmd_table[0]);
