@@ -58,7 +58,7 @@ int main(void) {
                 printf("Mode: %s\n", comp_mode ? "Comp" : (drive_mode ? "Drive" : (race_mode ? "Race" : "Test")));
                 printf("Battery Voltage: %.2f V\n", voltage_mv / 1000.0f);
                 if (race_mode || comp_mode){
-                    printf("Speed: %f mph\n", rpm * rpmtomph);
+                    printf("Speed: %f mph\n", speed);
                     printf("Target Speed: %f mph\n", target_speed);
                     printf("Target Current: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
@@ -66,7 +66,7 @@ int main(void) {
                     printf("\n");
                 }
                 if (drive_mode){
-                    printf("Speed: %f mph\n", rpm * rpmtomph);
+                    printf("Speed: %f mph\n", speed);
                     printf("Target Current: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
                     printf("Phase Current: %d mA\n", phase_current_ma_smoothed);
@@ -77,7 +77,7 @@ int main(void) {
                     printf("Current Target: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
                     printf("Phase Current: %d mA\n", phase_current_ma_smoothed);
-                    printf("Speed: %f mph\n", rpm * rpmtomph);
+                    printf("Speed: %f mph\n", speed);
                     printf("UCO: %s\n", UCO ? "ON" : "OFF");
                     printf("\n");
                 }

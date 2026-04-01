@@ -34,11 +34,11 @@ void send_telemetry_uart() {
     else if (drive_mode) mode = 'd';
     else mode = 'u'; // unknown
 
-    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%f,%d,%d,%d,%d,%d,%c\n",
+    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%.1f,%d,%d,%d,%d,%d,%c\n",
              signal,
              motor_ticks,
              UCO,
-             rpm*rpmtomph,
+             speed,
              voltage_mv,
              battery_current_ma,
              throttle_norm,

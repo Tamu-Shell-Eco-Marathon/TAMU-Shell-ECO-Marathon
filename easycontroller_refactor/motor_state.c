@@ -124,11 +124,13 @@ void get_RPM(){
         rpm_time_end = get_absolute_time();
         float dt_us = (float)absolute_time_diff_us(rpm_time_start, rpm_time_end);
         rpm = (motorstate_counter * 60.0f * 1e6f) / (dt_us * 138.0f); // 138 motor ticks in one rotation
+        speed = (motorstate_counter * 1e6f * 3600.0f) / (dt_us * ticksPerMile); // mph from ticks
         motorstate_counter = 0;
     }
 
     if (absolute_time_diff_us(time_since_last_movement, get_absolute_time()) > 500000) { // resets rpm counter if no motor movement for .5 seconds
         rpm = 0;
+        speed = 0;
         motorstate_counter = 0;
     }
 }

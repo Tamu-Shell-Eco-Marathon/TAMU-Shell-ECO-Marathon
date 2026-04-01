@@ -14,7 +14,7 @@ int THROTTLE_HIGH = 2000;
 
 int ECO_CURRENT_ma = 10000;
 float rpmtomph = 0.04767f; // Conversion from rpm to mph
-//TicksperMile = 174280
+float ticksPerMile = 174280.0f; // Hall state changes per mile — update at competition if needed
 // Correct Hall Table !!!DO NOT CHANGE!!!
 uint8_t hallToMotor[8] = {255, 3, 1, 2, 5, 4, 0, 255};
 

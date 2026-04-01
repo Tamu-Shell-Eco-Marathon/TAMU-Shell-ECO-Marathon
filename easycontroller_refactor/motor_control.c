@@ -43,7 +43,8 @@ void on_adc_fifo(void) {
     hall = get_halls();                 // Read the hall sensors
     motorState = hallToMotor[hall];     // Convert the current hall reading to the desired motor state
 
-    get_RPM(); // Update RPM 
+    prev_speed = speed;   // capture speed before get_RPM() updates it
+    get_RPM(); // Update RPM
 
     throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
     throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
@@ -289,8 +290,6 @@ void adjust_duty(){ //clamp current, increment duty, clamp duty, synchronous?, w
 void smart_cruise_func(){ //Cruise control target speed calculted on DIS
     //Requires global target_speed to be set prior to calling function
     current_target_ma = prev_current_target_ma; //Build off previous current
-    prev_speed = speed;
-    speed = (rpm * rpmtomph);
 
     //time difference in us
     float dt = absolute_time_diff_us(time_since_at_target_speed, get_absolute_time()); 
