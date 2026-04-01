@@ -16,7 +16,7 @@ button_manager = ButtonManager()
 
 # --- Debug Flags ---
 DEBUG_TSI = False
-DEBUG_PERFORMANCE = False
+DEBUG_PERFORMANCE = True
 DEBUG_VERBOSE = False
 perf_monitor = (
     PerformanceMonitor(verbose=DEBUG_VERBOSE) if DEBUG_PERFORMANCE else None

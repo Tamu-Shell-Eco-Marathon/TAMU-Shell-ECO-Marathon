@@ -107,7 +107,7 @@ class UartManager:
         formatted_data = message_string + ",\n"
         encoded_data = formatted_data.encode('utf-8')
         self.uart.write(encoded_data)
-        print("Sent UART: ", message_string)
+        # print("Sent UART: ", message_string)
 
     def send_admin_query(self):
         """Send A,query to request full state from motor controller."""
