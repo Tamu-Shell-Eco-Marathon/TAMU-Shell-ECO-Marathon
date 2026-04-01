@@ -94,7 +94,7 @@ class Vehicle:
         self.energy_consumed = 0.0
 
         # Constants
-        self.TICKS_PER_MILE = 181515
+        self.TICKS_PER_MILE = 174280
         self.WHEEL_DIAMETER_IN = 16
         self.GOAL_DISTANCE_MI = GOAL_DISTANCE_MI
         self.GOAL_TIME_SEC = GOAL_TIME_SEC
