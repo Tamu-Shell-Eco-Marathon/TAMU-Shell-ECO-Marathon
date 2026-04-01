@@ -27,7 +27,7 @@ const int HALL_IDENTIFY_DUTY_CYCLE = 25;
 int UART_SEND_INTERVAL_US = 250000; // 4 Hz
 
 //Smart cruise parameters
-float cruise_error = 1.0f;
+float cruise_error = 0.5f;
 int cruise_increment = 1; //miliamps
 float CRUISE_INCREMENT_MAX = 500;
 float kp=64.0f;
