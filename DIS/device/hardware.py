@@ -14,7 +14,7 @@ UART_TX_PIN = 4
 UART_RX_PIN = 5
 
 # ------- Interfaces -------
-uart = UART(1, baudrate=115200, tx=Pin(UART_TX_PIN), rx=Pin(UART_RX_PIN))
+uart = UART(1, baudrate=115200, tx=Pin(UART_TX_PIN), rx=Pin(UART_RX_PIN), rxbuf=512)
 
 spi = SPI(1, 30000_000, polarity=0, phase=0, sck=Pin(SCK_PIN), mosi=Pin(MOSI_PIN), miso=None)
 
