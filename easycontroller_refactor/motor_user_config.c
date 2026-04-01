@@ -12,7 +12,7 @@ int BATTERY_MAX_CURRENT_MA = 20000;
 int THROTTLE_LOW = 700;
 int THROTTLE_HIGH = 2000;
 
-int ECO_CURRENT_ma = 6000;
+int ECO_CURRENT_ma = 10000;
 float rpmtomph = 0.04767f; // Conversion from rpm to mph
 
 // Correct Hall Table !!!DO NOT CHANGE!!!
@@ -30,7 +30,7 @@ int UART_SEND_INTERVAL_US = 250000; // 4 Hz
 float cruise_error = 1.0f;
 int cruise_increment = 1; //miliamps
 float CRUISE_INCREMENT_MAX = 500;
-float kp=.001f;
-float ki=4.0f;
-float kd=.4f;
+float kp=64.0f;
+float ki=0.0f;
+float kd=0.0f;
 
