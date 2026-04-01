@@ -42,6 +42,11 @@ class UartManager:
             self.last_message = line # Store for read_message()
 
             if line.startswith("s,"):
+                # Handle RX overrun: two messages fused together
+                second = line.find("s,", 2)
+                if second != -1:
+                    line = line[second:]
+
                 parts = line.split(',')
                 if len(parts) >= 10:
                     vehicle.motor_ticks = int(parts[1])
