@@ -19,6 +19,14 @@ SCREEN_ODOMETER = 4
 SCREEN_TARGET = 5
 SCREEN_EFFICIENCY = 8
 
+_SCREEN_NAMES = {
+    SCREEN_MPH: "Speedometer",
+    SCREEN_TIMER: "Timer",
+    SCREEN_ODOMETER: "Odometer",
+    SCREEN_TARGET: "Target Speed",
+    SCREEN_EFFICIENCY: "Efficiency",
+}
+
 
 class RaceManager:
     """
@@ -51,6 +59,17 @@ class RaceManager:
         # --- Lap Calibration State ---
         # (comp_lap_count and comp_race_active live on vehicle)
 
+    def _fmt_time(self, seconds):
+        m = int(seconds) // 60
+        s = int(seconds) % 60
+        return "{}:{:02d}".format(m, s) if m > 0 else ":{}".format(s)
+
+    def _screen_name(self, index):
+        return _SCREEN_NAMES.get(index, "Screen[{}]".format(index))
+
+    def _queue_names(self):
+        return [self._screen_name(s) for s in self._screen_queue]
+
     def start(self, display):
         """Activate the race manager (called when entering comp mode or recovering)."""
         self.active = True
@@ -66,10 +85,12 @@ class RaceManager:
         self._last_efficiency_trigger = now
         self._last_speed_alert = now
         display.current_screen = SCREEN_MPH
+        print("Race Manager: ACTIVATED")
 
     def stop(self):
         """Deactivate the race manager."""
         self.active = False
+        print("Race Manager: DEACTIVATED")
 
     # =========================================================================
     # MAIN UPDATE (called every main loop iteration)
@@ -90,7 +111,7 @@ class RaceManager:
         self._check_efficiency_trigger(now)
 
         # --- Process screen scheduler ---
-        self._process_scheduler(display, now)
+        self._process_scheduler(display, now, vehicle)
 
         # --- Speed alerts ---
         self._check_speed_alerts(vehicle, display, elapsed, now)
@@ -158,6 +179,7 @@ class RaceManager:
         self._last_speed_alert = now
 
         display.show_alert("RACE", "START", 2)
+        print("Race Manager: RACE START")
 
     def _finish_race(self, vehicle, display, uart_manager, now):
         """Finish the competition race."""
@@ -169,6 +191,7 @@ class RaceManager:
 
         uart_manager.send_admin_finish()
         display.show_alert("RACE", "END", 3)
+        print("Race Manager: RACE END | elapsed={}".format(self._fmt_time(vehicle.timer_elapsed_seconds)))
 
     def _exit_competition(self, vehicle, display, uart_manager):
         """Exit competition mode entirely."""
@@ -185,6 +208,7 @@ class RaceManager:
         vehicle.state = "DRIVE"
         display.current_screen = SCREEN_MPH
         display.show_alert("COMP", "EXIT", 2)
+        print("Race Manager: COMP EXIT")
 
     # =========================================================================
     # LAP CALIBRATION
@@ -211,10 +235,14 @@ class RaceManager:
             uart_manager.send_admin_lap(vehicle.comp_lap_count)
             display.show_alert("LAP", str(vehicle.comp_lap_count), 2)
             display.set_invert(1)
+            print("Race Manager: LAP {} accepted | dist={:.3f}mi (expected {:.3f}mi)".format(
+                vehicle.comp_lap_count, expected_distance, expected_distance))
         else:
             # Calibration rejected
             display.show_alert("BAD", "LAP", 2)
             display.set_invert(1)
+            print("Race Manager: LAP rejected | dist={:.3f}mi (expected {:.3f}mi, margin={:.3f}mi)".format(
+                vehicle.distance_miles, expected_distance, margin))
 
     # =========================================================================
     # SCREEN SCHEDULER
@@ -224,6 +252,8 @@ class RaceManager:
         """Add a screen to the scheduler queue if not already queued."""
         if screen_index not in self._screen_queue and len(self._screen_queue) < 4:
             self._screen_queue.append(screen_index)
+            print("Race Manager: Queued {} | queue={}".format(
+                self._screen_name(screen_index), self._queue_names()))
 
     def _check_timer_trigger(self, vehicle, elapsed):
         """Check if the timer screen should be shown."""
@@ -269,7 +299,7 @@ class RaceManager:
             self._last_efficiency_trigger = now
             self._enqueue_screen(SCREEN_EFFICIENCY)
 
-    def _process_scheduler(self, display, now):
+    def _process_scheduler(self, display, now, vehicle):
         """Process the screen scheduler: switch screens as needed."""
         if self._showing_non_mph:
             # Currently showing a scheduled screen - check if duration has elapsed
@@ -280,6 +310,9 @@ class RaceManager:
                 self._current_showing = SCREEN_MPH
                 self._speedometer_start = now
                 display.current_screen = SCREEN_MPH
+                next_name = self._queue_names()[0] if self._screen_queue else "none"
+                print("Race Manager: Showing Speedometer ({}) | Next: {}".format(
+                    self._fmt_time(vehicle.timer_elapsed_seconds), next_name))
         else:
             # Currently on speedometer - check if we can show queued screen
             if self._screen_queue:
@@ -293,6 +326,11 @@ class RaceManager:
                     display.current_screen = next_screen
                     # Invert display briefly to grab attention
                     display.set_invert(COMP_SCREEN_INVERT_SEC)
+                    next_name = self._queue_names()[0] if self._screen_queue else "Speedometer"
+                    print("Race Manager: Showing {} ({}) | Next: {}".format(
+                        self._screen_name(next_screen),
+                        self._fmt_time(vehicle.timer_elapsed_seconds),
+                        next_name))
 
     # =========================================================================
     # SPEED ALERTS
@@ -313,7 +351,7 @@ class RaceManager:
         interval_ms = 0
 
         if target > COMP_ALERT_SLOW_DOWN_MPH:
-            alert_text = ("SLOW", "DOWN")
+            alert_text = ("SPEED", "UP")
             overshoot = target - COMP_ALERT_SLOW_DOWN_MPH
             if overshoot > 2:
                 interval_ms = 15000
@@ -323,7 +361,7 @@ class RaceManager:
                 interval_ms = 60000
 
         elif target < COMP_ALERT_SPEED_UP_MPH:
-            alert_text = ("SPEED", "UP")
+            alert_text = ("SLOW", "DOWN")
             undershoot = COMP_ALERT_SPEED_UP_MPH - target
             if undershoot > 2:
                 interval_ms = 15000
@@ -336,6 +374,9 @@ class RaceManager:
             self._last_speed_alert = now
             display.queue_alert(alert_text[0], alert_text[1], COMP_ALERT_DISPLAY_SEC)
             display.set_invert(COMP_ALERT_DISPLAY_SEC)
+            print("Race Manager: ALERT {} {} | target={:.1f}mph elapsed={}".format(
+                alert_text[0], alert_text[1], target,
+                self._fmt_time(elapsed)))
 
     # =========================================================================
     # STATE RECOVERY (for DIS power loss)
@@ -374,3 +415,8 @@ class RaceManager:
         self._last_odometer_trigger_mi = int(vehicle.distance_miles / COMP_ODOMETER_INTERVAL_MI)
 
         display.show_alert("DIS", "RESET", 2)
+        print("Race Manager: RECOVERED | elapsed={} laps={} dist={:.3f}mi energy={:.2f}Wh".format(
+            self._fmt_time(admin_data['elapsed_sec']),
+            admin_data['lap_count'],
+            vehicle.distance_miles,
+            vehicle.energy_consumed))
