@@ -12,7 +12,7 @@ int BATTERY_MAX_CURRENT_MA = 20000;
 int THROTTLE_LOW = 700;
 int THROTTLE_HIGH = 2000;
 
-int ECO_CURRENT_ma = 10000;
+int ECO_CURRENT_ma = 12000;
 float rpmtomph = 0.04767f; // Conversion from rpm to mph
 float ticksPerMile = 174280.0f; // Hall state changes per mile — update at competition if needed
 // Correct Hall Table !!!DO NOT CHANGE!!!
@@ -33,6 +33,6 @@ float CRUISE_INCREMENT_MAX = 500;
 float kp=64.0f;
 float ki=0.0f;
 float kd=0.0f;
-float MAX_SMARTCRUISE_CURRENT_MA = 10000.0f; // mA ceiling for smart cruise current requests
+float MAX_SMARTCRUISE_CURRENT_MA = 12000.0f; // mA ceiling for smart cruise current requests
 float cruise_offset = 0.0f;                  // mph offset added to UART target speed
 
