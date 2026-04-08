@@ -45,8 +45,12 @@ void on_adc_fifo(void) {
 
     get_RPM(); // Update RPM 
 
-    throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
-    throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
+    if (THROTTLE_HIGH != THROTTLE_LOW) {
+        throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
+        throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
+    } else {
+        throttle = 0;
+    }
 
     phase_current_ma = (adc_isense - adc_bias) * CURRENT_SCALING;     // Since the current sensor is bidirectional, subtract the zero-current value and scale
     phase_current_ma_smoothed = (phase_current_ma + (199 * phase_current_ma_smoothed)) / 200;
@@ -108,8 +112,12 @@ void on_adc_fifo(void) {
         }
 
         if (drive_mode){
-            throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
-            throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
+            if (THROTTLE_HIGH != THROTTLE_LOW) {
+                throttle = ((adc_throttle - THROTTLE_LOW) * 256) / (THROTTLE_HIGH - THROTTLE_LOW);  // Scale the throttle value read from the ADC
+                throttle = MAX(0, MIN(255, throttle));      // Clamp to 0-255
+            } else {
+                throttle = 0;
+            }
             user_current_target_ma = throttle * BATTERY_MAX_CURRENT_MA / 256;  // Recalculate the user-demanded phase current with updated THROTTLE_HIGH
             current_target_ma = MIN(user_current_target_ma, battery_current_limit_ma);
             THROTTLE_HIGH = 2000;
