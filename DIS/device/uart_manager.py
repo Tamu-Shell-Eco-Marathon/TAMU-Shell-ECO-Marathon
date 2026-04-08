@@ -9,6 +9,7 @@ class UartManager:
 
         # Admin response storage (populated by A,state responses)
         self.admin_response = None
+        self.last_elapsed_sec = 0.0
 
     def update(self, vehicle):
         """
@@ -48,13 +49,13 @@ class UartManager:
                     line = line[second:]
 
                 parts = line.split(',')
-                if len(parts) >= 10:
+                if len(parts) >= 11:
                     vehicle.motor_ticks = int(parts[1])
                     vehicle.smart_cruise = bool(int(parts[2]))
                     vehicle.motor_mph = float(parts[3])
                     vehicle.rpm = int(vehicle.motor_mph / 0.04767)
-                    vehicle.voltage = int(parts[4]) / 1000.0
-                    vehicle.current = int(parts[5]) / 1000.0
+                    vehicle.voltage = float(parts[4])
+                    vehicle.current = float(parts[5])
                     vehicle.throttle_position = int(parts[6])
                     vehicle.throttle = int(parts[7])
                     if vehicle.throttle > 100:
@@ -69,6 +70,7 @@ class UartManager:
                         vehicle.state = "TEST"
                     elif mode_char == 'd':
                         vehicle.state = "DRIVE"
+                    self.last_elapsed_sec = float(parts[10])
 
             elif line.startswith("A,state,"):
                 # Admin state response: A,state,<mode>,<timer>,<elapsed>,<ticks>,<energy>,<laps>

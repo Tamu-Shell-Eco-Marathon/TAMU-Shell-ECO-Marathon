@@ -19,6 +19,7 @@ bool msg_ready = false;
 float target_speed = 15;
 
 void send_telemetry_uart() {
+    update_race_timer();
 
     int duty_cycle_norm = duty_cycle * 100 / DUTY_CYCLE_MAX;
     int throttle_norm   = throttle * 100 / 255;
@@ -34,17 +35,18 @@ void send_telemetry_uart() {
     else if (drive_mode) mode = 'd';
     else mode = 'u'; // unknown
 
-    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%d,%d,%.1f,%d,%d,%d,%d,%d,%c\n",
+    snprintf(message_to_DIS, sizeof(message_to_DIS), "%c,%u,%d,%.1f,%.2f,%.2f,%d,%d,%d,%c,%.1f\n",
              signal,
              motor_ticks,
              UCO,
              speed,
-             voltage_mv,
-             battery_current_ma,
+             voltage_mv / 1000.0f,
+             battery_current_ma / 1000.0f,
              throttle_norm,
              throttle_mapped,
              duty_cycle_norm,
-             mode);
+             mode,
+             race_elapsed_seconds);
 
     uart_puts(UART_ID, message_to_DIS);
 }

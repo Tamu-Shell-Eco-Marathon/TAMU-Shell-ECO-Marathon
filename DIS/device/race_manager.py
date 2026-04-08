@@ -420,3 +420,19 @@ class RaceManager:
             admin_data['lap_count'],
             vehicle.distance_miles,
             vehicle.energy_consumed))
+
+    def recover_from_s_message(self, vehicle, uart_manager, display):
+        """
+        Recover competition state from the first S message after DIS power loss.
+        Elapsed time and distance are recovered from S message data.
+        Lap count and energy reset to 0 (not available in S messages).
+        """
+        admin_data = {
+            'mode': 'c',
+            'timer_running': True,
+            'elapsed_sec': uart_manager.last_elapsed_sec,
+            'ticks': vehicle.motor_ticks,
+            'energy_wh': 0.0,
+            'lap_count': 0,
+        }
+        self.recover_from_admin(admin_data, vehicle, display, uart_manager)

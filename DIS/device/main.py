@@ -41,32 +41,26 @@ ENERGY_SYNC_INTERVAL_MS = 30000  # Sync energy to MC every 30 seconds
 # ---------------------------------------------------
 
 # =============== STARTUP RECOVERY ==================
-# Send A,query to check if a race is already in progress on the MC
-print("DIS Initialized - querying motor controller state\n")
-uart_manager.send_admin_query()
+# Wait for first S message from MC to detect competition mode recovery
+print("DIS Initialized - waiting for motor controller state\n")
 
-# Wait briefly for response (non-blocking with timeout)
 _query_start = time.ticks_ms()
 _recovery_done = False
 while time.ticks_diff(time.ticks_ms(), _query_start) < 500:
     uart_manager.update(vehicle)
-    resp = uart_manager.read_admin_response()
-    if resp is not None:
-        print("Admin response:", resp)
-        if resp['timer_running'] and resp['mode'] == 'c':
-            # Active competition race detected - recover state
-            race_manager.recover_from_admin(resp, vehicle, display, uart_manager)
-            # Auto-start logging
-            if vehicle.logging_armed:
-                logger.start()
-            print("RECOVERED: comp mode, elapsed={:.1f}s, ticks={}, laps={}".format(
-                resp['elapsed_sec'], resp['ticks'], resp['lap_count']))
+    if uart_manager.new_data:
+        if vehicle.state == "COMP":
+            # Active competition race detected - recover state from S message
+            race_manager.recover_from_s_message(vehicle, uart_manager, display)
+            logger.start()
+            print("RECOVERED: comp mode, elapsed={:.1f}s, ticks={}".format(
+                uart_manager.last_elapsed_sec, vehicle.motor_ticks))
         _recovery_done = True
         break
     time.sleep_ms(10)
 
 if not _recovery_done:
-    print("No admin response - starting fresh")
+    print("No motor controller data - starting fresh")
 
 # =============== MAIN LOOP =========================
 
