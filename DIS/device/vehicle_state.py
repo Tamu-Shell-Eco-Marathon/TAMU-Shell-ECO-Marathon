@@ -6,7 +6,7 @@ import math
 
 # ---- Competition Race Parameters ----
 GOAL_DISTANCE_MI = 9.56              # Total race distance (miles)
-GOAL_TIME_SEC = 35 * 60              # Total race time (seconds)
+GOAL_TIME_SEC = 34 * 60              # Total race time (seconds)
 COMP_NUM_LAPS = 4                    # Number of laps in the race
 
 # ---- Lap Calibration Distances (miles, cumulative) ----

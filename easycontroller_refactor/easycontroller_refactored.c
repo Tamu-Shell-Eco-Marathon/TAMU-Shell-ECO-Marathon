@@ -63,6 +63,7 @@ int main(void) {
                     printf("Target Current: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
                     printf("Phase Current: %d mA\n", phase_current_ma_smoothed);
+                    printf("Throttle ADC Value: %d\n", adc_throttle);
                     printf("\n");
                 }
                 if (drive_mode){
@@ -70,6 +71,7 @@ int main(void) {
                     printf("Target Current: %d mA\n", current_target_ma);
                     printf("Battery Current: %d mA\n", battery_current_ma);
                     printf("Phase Current: %d mA\n", phase_current_ma_smoothed);
+                    printf("Throttle ADC Value: %d\n", adc_throttle);
                     printf("\n");
                 }
                 if (test_mode){

@@ -9,7 +9,7 @@ const bool IDENTIFY_HALLS_REVERSE = false;  // If true, will initialize the hall
 int PHASE_MAX_CURRENT_MA = 90000;
 int BATTERY_MAX_CURRENT_MA = 20000;
 
-int THROTTLE_LOW = 700;
+int THROTTLE_LOW = 800;
 int THROTTLE_HIGH = 2000;
 
 int ECO_CURRENT_ma = 12000;
