@@ -7,7 +7,7 @@ const bool IDENTIFY_HALLS_ON_BOOT = false;   // If true, controller will initial
 const bool IDENTIFY_HALLS_REVERSE = false;  // If true, will initialize the hall table to spin the motor backwards
 
 int PHASE_MAX_CURRENT_MA = 90000;
-int BATTERY_MAX_CURRENT_MA = 20000;
+int BATTERY_MAX_CURRENT_MA = 1700;
 
 int THROTTLE_LOW = 800;
 int THROTTLE_HIGH = 2000;
@@ -29,10 +29,10 @@ int UART_SEND_INTERVAL_US = 250000; // 4 Hz
 //Smart cruise parameters
 float cruise_error = 0.10f; //scalar for target speed band around effective target speed (e.g. 0.1 = +/- 10%)
 int cruise_increment = 0; //miliamps added or subtracted when adjusting current target for smart cruise
-float CRUISE_INCREMENT_MAX = 500;
-float kp=64.0f;
-float ki=0.0f;
-float kd=0.0f;
-float MAX_SMARTCRUISE_CURRENT_MA = 12000.0f; // mA ceiling for smart cruise current requests
+float CRUISE_INCREMENT_MAX = 100;
+float kp=36.0f;
+float ki=3.0f;
+float kd=5.0f;
+float MAX_SMARTCRUISE_CURRENT_MA = 1300.0f; // mA ceiling for smart cruise current requests
 float cruise_offset = 0.0f;                  // mph offset added to UART target speed
 
