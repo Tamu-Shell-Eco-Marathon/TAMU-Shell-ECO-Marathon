@@ -14,7 +14,7 @@ int THROTTLE_HIGH = 2000;
 
 int ECO_CURRENT_ma = 12000;
 float rpmtomph = 0.04767f; // Conversion from rpm to mph
-float ticksPerMile = 174280.0f; // Hall state changes per mile — update at competition if needed
+float ticksPerMile = 167063.597f; // Hall state changes per mile — update at competition if needed
 // Correct Hall Table !!!DO NOT CHANGE!!!
 uint8_t hallToMotor[8] = {255, 3, 1, 2, 5, 4, 0, 255};
 
@@ -34,5 +34,5 @@ float kp=64.0f;
 float ki=0.0f;
 float kd=0.0f;
 float MAX_SMARTCRUISE_CURRENT_MA = 12000.0f; // mA ceiling for smart cruise current requests
-float cruise_offset = 0.0f;                  // mph offset added to UART target speed
+float cruise_offset = 1.2f;                  // mph offset added to UART target speed
 

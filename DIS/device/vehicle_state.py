@@ -5,7 +5,7 @@ import utime as time
 import math
 
 # ---- Competition Race Parameters ----
-GOAL_DISTANCE_MI = 9.56  # Total race distance (miles)
+GOAL_DISTANCE_MI = 9.62  # Total race distance (miles)
 GOAL_TIME_SEC = 34 * 60  # Total race time (seconds)
 COMP_NUM_LAPS = 4  # Number of laps in the race
 
@@ -98,7 +98,8 @@ class Vehicle:
         self.energy_consumed = 0.0
 
         # Constants
-        self.TICKS_PER_MILE = 174280
+        self.TICKS_PER_MILE = 167063.597
+
         self.WHEEL_DIAMETER_IN = 16
         self.GOAL_DISTANCE_MI = GOAL_DISTANCE_MI
         self.GOAL_TIME_SEC = GOAL_TIME_SEC
